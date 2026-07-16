@@ -1,0 +1,30 @@
+[0.014s] Invoking command in '/home/ebrahim/Desktop/ros2/build/lunabotics_model': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ebrahim/Desktop/ros2/src/lunabotics_model -DCMAKE_INSTALL_PREFIX=/home/ebrahim/Desktop/ros2/install/lunabotics_model
+[0.026s] -- Found ament_cmake: 2.8.7 (/opt/ros/lyrical/share/ament_cmake/cmake)
+[0.223s] -- Found urdf: 2.13.2 (/opt/ros/lyrical/share/urdf/cmake)
+[0.233s] -- Found robot_state_publisher: 3.5.5 (/opt/ros/lyrical/share/robot_state_publisher/cmake)
+[0.339s] -- Found rosidl_generator_c: 5.2.1 (/opt/ros/lyrical/share/rosidl_generator_c/cmake)
+[0.353s] -- Found rosidl_generator_cpp: 5.2.1 (/opt/ros/lyrical/share/rosidl_generator_cpp/cmake)
+[0.393s] -- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+[0.428s] -- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+[0.589s] -- Found rmw_implementation_cmake: 7.10.1 (/opt/ros/lyrical/share/rmw_implementation_cmake/cmake)
+[0.594s] -- Found rmw_fastrtps_cpp: 9.4.8 (/opt/ros/lyrical/share/rmw_fastrtps_cpp/cmake)
+[0.649s] -- Using RMW implementation 'rmw_fastrtps_cpp' as default
+[1.088s] [31mCMake Error at CMakeLists.txt:12 (find_package):
+[1.088s]   By not providing "Findjoint_state_publisher_gui.cmake" in CMAKE_MODULE_PATH
+[1.088s]   this project has asked CMake to find a package configuration file provided
+[1.089s]   by "joint_state_publisher_gui", but CMake did not find one.
+[1.089s] 
+[1.089s]   Could not find a package configuration file provided by
+[1.089s]   "joint_state_publisher_gui" with any of the following names:
+[1.089s] 
+[1.089s]     joint_state_publisher_guiConfig.cmake
+[1.090s]     joint_state_publisher_gui-config.cmake
+[1.090s] 
+[1.090s]   Add the installation prefix of "joint_state_publisher_gui" to
+[1.090s]   CMAKE_PREFIX_PATH or set "joint_state_publisher_gui_DIR" to a directory
+[1.090s]   containing one of the above files.  If "joint_state_publisher_gui" provides
+[1.090s]   a separate development package or SDK, be sure it has been installed.
+[1.090s] 
+[1.091s] [0m
+[1.091s] -- Configuring incomplete, errors occurred!
+[1.094s] Invoked command in '/home/ebrahim/Desktop/ros2/build/lunabotics_model' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/opt/ros/lyrical DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ebrahim/Desktop/ros2/src/lunabotics_model -DCMAKE_INSTALL_PREFIX=/home/ebrahim/Desktop/ros2/install/lunabotics_model
