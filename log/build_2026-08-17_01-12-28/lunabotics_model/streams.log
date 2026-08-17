@@ -1,0 +1,83 @@
+[0.023s] Invoking command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model -- -j8 -l8
+[0.072s] -- Found ament_cmake: 2.5.5 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.519s] -- Override CMake install command with custom implementation using symlinks instead of copying resources
+[0.861s] -- Found ament_lint_auto: 0.17.4 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[1.098s] -- Added test 'flake8' to check Python code syntax and style conventions
+[1.099s] -- Configured 'flake8' exclude dirs and/or files: 
+[1.100s] -- Added test 'lint_cmake' to check CMake code style
+[1.102s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[1.107s] -- Added test 'xmllint' to check XML markup files
+[1.109s] -- Configuring done (1.1s)
+[1.117s] -- Generating done (0.0s)
+[1.120s] -- Build files have been written to: /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model
+[1.161s] Invoked command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model -- -j8 -l8
+[1.177s] Invoking command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model
+[1.190s] -- Install configuration: ""
+[1.190s] -- Execute custom install script
+[1.190s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/urdf/assembly_1.urdf
+[1.191s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/launch/__pycache__/moon.launch.cpython-312.pyc
+[1.191s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/launch/display.launch.py
+[1.191s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/launch/gazebo.launch.py
+[1.191s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/launch/moon.launch.py
+[1.191s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___1.stl
+[1.192s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___2.stl
+[1.192s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___403.stl
+[1.192s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___700.stl
+[1.192s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___60___400.stl
+[1.192s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_40___40___1.stl
+[1.192s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_40___40___407.stl
+[1.193s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR50_24_01_P1_Back.stl
+[1.193s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR50_24_01_P1_Back_Mirrored.stl
+[1.193s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P2.stl
+[1.193s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P3.stl
+[1.193s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P4.stl
+[1.193s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P5.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P6.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/bucket.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/electronics.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/flange.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/wheel.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/wheel_Mirrored.stl
+[1.194s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/model.config
+[1.194s] -- Symlinking: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/model.config
+[1.210s] -- Symlinking: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/model.sdf
+[1.226s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/worlds/lunabotics.world.sdf
+[1.226s] -- Symlinking: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/worlds/moon_surface.world.sdf
+[1.241s] -- Symlinking: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/textures/dem_moon.jpg
+[1.258s] -- Symlinking: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/textures/lunar_surface.jpg
+[1.273s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___1.stl
+[1.273s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___2.stl
+[1.273s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___403.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___700.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___60___400.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_40___40___1.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_40___40___407.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR50_24_01_P1_Back.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR50_24_01_P1_Back_Mirrored.stl
+[1.274s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR70_24_02_HG50_P2.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR70_24_02_HG50_P3.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR70_24_02_HG50_P4.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR70_24_02_HG50_P5.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR70_24_02_HG50_P6.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/bucket.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/electronics.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/flange.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/wheel.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/wheel_Mirrored.stl
+[1.278s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/model.sdf
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/ament_index/resource_index/package_run_dependencies/lunabotics_model
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/ament_index/resource_index/parent_prefix_path/lunabotics_model
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/environment/ament_prefix_path.sh
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/environment/ament_prefix_path.dsv
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/environment/path.sh
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/environment/path.dsv
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/local_setup.bash
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/local_setup.sh
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/local_setup.zsh
+[1.279s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/local_setup.dsv
+[1.279s] -- Symlinking: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/package.dsv
+[1.300s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/ament_index/resource_index/packages/lunabotics_model
+[1.301s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/cmake/lunabotics_modelConfig.cmake
+[1.301s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/cmake/lunabotics_modelConfig-version.cmake
+[1.301s] -- Up-to-date symlink: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/package.xml
+[1.304s] Invoked command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model

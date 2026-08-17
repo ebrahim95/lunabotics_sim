@@ -1,9 +1,4 @@
-"""Compatibility launch for the stable, flat Lunabotics driving world.
-
-The original high-detail Moon scene is retained under space_robotics_gz_envs,
-but its Gazebo/Ogre renderer path is not stable on this machine.  This launch
-intentionally uses the established working rover world instead.
-"""
+"""Launch the rover on a lightweight, native Gazebo Moon heightmap."""
 
 import os
 
@@ -26,7 +21,7 @@ def generate_launch_description():
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(os.path.join(gz_share, "launch", "gz_sim.launch.py")),
             launch_arguments={
-                "gz_args": "-r " + os.path.join(pkg_share, "worlds", "lunabotics.world.sdf"),
+                "gz_args": "-r " + os.path.join(pkg_share, "worlds", "moon_surface.world.sdf"),
             }.items(),
         ),
         Node(

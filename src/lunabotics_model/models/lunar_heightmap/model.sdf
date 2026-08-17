@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+<sdf version="1.9">
+  <model name="lunar_heightmap">
+    <static>true</static>
+    <!-- Harmonic's DART / ODE heightfield collision honors the link pose. -->
+    <link name="terrain_collision_link">
+      <pose>0 0 -13 0 0 0</pose>
+      <collision name="terrain_collision">
+        <geometry>
+          <heightmap>
+            <uri>model://lunar_heightmap/textures/dem_moon.jpg</uri>
+            <size>513 513 20</size>
+            <pos>0 0 0 0 0 0</pos>
+          </heightmap>
+        </geometry>
+        <surface>
+          <friction>
+            <ode><mu>1.1</mu><mu2>1.1</mu2></ode>
+          </friction>
+        </surface>
+      </collision>
+    </link>
+
+    <!-- Gazebo Harmonic's heightmap rendering applies offsets differently
+         from its heightmap physics.  Use a mesh sampled from the same DEM so
+         this visual surface exactly follows the collision terrain. -->
+    <link name="terrain_visual_link">
+      <visual name="terrain_visual">
+        <geometry>
+          <mesh><uri>model://lunar_heightmap/meshes/lunar_heightmap_visual.obj</uri></mesh>
+        </geometry>
+        <material>
+          <ambient>0.12 0.13 0.15 1</ambient>
+          <diffuse>0.22 0.23 0.25 1</diffuse>
+          <specular>0 0 0 1</specular>
+          <emissive>0.04 0.045 0.055 1</emissive>
+        </material>
+      </visual>
+    </link>
+  </model>
+</sdf>

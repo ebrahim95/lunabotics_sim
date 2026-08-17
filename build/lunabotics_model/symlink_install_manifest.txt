@@ -23,7 +23,14 @@
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/wheel.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/wheel_Mirrored.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/model.config
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/model.config
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/model.sdf
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/worlds/lunabotics.world.sdf
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/worlds/moon_surface.world.sdf
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/textures/dem_moon.jpg
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/textures/lunar_surface.jpg
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/meshes/lunar_heightmap_visual.obj
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunar_heightmap/meshes/lunar_heightmap_visual.mtl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___1.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___2.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___403.stl

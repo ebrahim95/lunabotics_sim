@@ -318,6 +318,15 @@ message(STATUS "Execute custom install script")
 # install(DIRECTORY "urdf" "launch" "meshes" "models" "worlds" "DESTINATION" "share/lunabotics_model")
 ament_cmake_symlink_install_directory("/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model" DIRECTORY "urdf" "launch" "meshes" "models" "worlds" "DESTINATION" "share/lunabotics_model")
 
+# install(FILES "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/../../moon_base_map/ezrassor_sim_gazebo/models/dem_moon/materials/textures/dem_moon.jpg" "DESTINATION" "share/lunabotics_model/models/lunar_heightmap/textures")
+ament_cmake_symlink_install_files("/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model" FILES "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/../../moon_base_map/ezrassor_sim_gazebo/models/dem_moon/materials/textures/dem_moon.jpg" "DESTINATION" "share/lunabotics_model/models/lunar_heightmap/textures")
+
+# install(FILES "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/../../moon_base_map/ezrassor_sim_gazebo/models/dem_moon/materials/textures/AS16-110-18026HR-512x512.jpg" "DESTINATION" "share/lunabotics_model/models/lunar_heightmap/textures" "RENAME" "lunar_surface.jpg")
+ament_cmake_symlink_install_files("/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model" FILES "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/../../moon_base_map/ezrassor_sim_gazebo/models/dem_moon/materials/textures/AS16-110-18026HR-512x512.jpg" "DESTINATION" "share/lunabotics_model/models/lunar_heightmap/textures" "RENAME" "lunar_surface.jpg")
+
+# install(FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/lunar_heightmap_visual.obj" "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/lunar_heightmap_visual.mtl" "DESTINATION" "share/lunabotics_model/models/lunar_heightmap/meshes")
+ament_cmake_symlink_install_files("/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model" FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/lunar_heightmap_visual.obj" "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/lunar_heightmap_visual.mtl" "DESTINATION" "share/lunabotics_model/models/lunar_heightmap/meshes")
+
 # install(DIRECTORY "meshes/" "DESTINATION" "share/lunabotics_model/models/lunabotics_rover/meshes")
 ament_cmake_symlink_install_directory("/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model" DIRECTORY "meshes/" "DESTINATION" "share/lunabotics_model/models/lunabotics_rover/meshes")
 
