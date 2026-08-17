@@ -1,8 +1,8 @@
-# Install script for directory: /home/ebrahim/Desktop/ros2/src/lunabotics_model
+# Install script for directory: /home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/ebrahim/Desktop/ros2/install/lunabotics_model")
+  set(CMAKE_INSTALL_PREFIX "/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -37,102 +37,91 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
   set(CMAKE_CROSSCOMPILING "FALSE")
 endif()
 
-# Set path to fallback-tool for dependency-resolution.
+# Set default install directory permissions.
 if(NOT DEFINED CMAKE_OBJDUMP)
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE DIRECTORY FILES
-    "/home/ebrahim/Desktop/ros2/src/lunabotics_model/urdf"
-    "/home/ebrahim/Desktop/ros2/src/lunabotics_model/launch"
-    "/home/ebrahim/Desktop/ros2/src/lunabotics_model/meshes"
-    "/home/ebrahim/Desktop/ros2/src/lunabotics_model/rviz"
+    "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/urdf"
+    "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/launch"
+    "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/meshes"
+    "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/models"
+    "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/worlds"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/package_run_dependencies" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/lunabotics_model")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/models/lunabotics_rover/meshes" TYPE DIRECTORY FILES "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/meshes/")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/parent_prefix_path" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/lunabotics_model")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/package_run_dependencies" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/lunabotics_model")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/opt/ros/lyrical/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/parent_prefix_path" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/parent_prefix_path/lunabotics_model")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/ament_prefix_path.dsv")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/opt/ros/jazzy/share/ament_cmake_core/cmake/environment_hooks/environment/ament_prefix_path.sh")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/opt/ros/lyrical/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/ament_prefix_path.dsv")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/path.dsv")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/opt/ros/jazzy/share/ament_cmake_core/cmake/environment_hooks/environment/path.sh")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.bash")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/environment" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/path.dsv")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.fish")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.bash")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.sh")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.sh")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.zsh")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.zsh")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.dsv")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.dsv")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_environment_hooks/package.dsv")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/package.dsv")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/packages" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/packages/lunabotics_model")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/packages" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/packages/lunabotics_model")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/cmake" TYPE FILE FILES
-    "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_core/lunabotics_modelConfig.cmake"
-    "/home/ebrahim/Desktop/ros2/build/lunabotics_model/ament_cmake_core/lunabotics_modelConfig-version.cmake"
+    "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_core/lunabotics_modelConfig.cmake"
+    "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_core/lunabotics_modelConfig-version.cmake"
     )
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ebrahim/Desktop/ros2/src/lunabotics_model/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/package.xml")
 endif()
 
-string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
-       "${CMAKE_INSTALL_MANIFEST_FILES}")
-if(CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/home/ebrahim/Desktop/ros2/build/lunabotics_model/install_local_manifest.txt"
-     "${CMAKE_INSTALL_MANIFEST_CONTENT}")
-endif()
 if(CMAKE_INSTALL_COMPONENT)
-  if(CMAKE_INSTALL_COMPONENT MATCHES "^[a-zA-Z0-9_.+-]+$")
-    set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
-  else()
-    string(MD5 CMAKE_INST_COMP_HASH "${CMAKE_INSTALL_COMPONENT}")
-    set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INST_COMP_HASH}.txt")
-    unset(CMAKE_INST_COMP_HASH)
-  endif()
+  set(CMAKE_INSTALL_MANIFEST "install_manifest_${CMAKE_INSTALL_COMPONENT}.txt")
 else()
   set(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 endif()
 
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  file(WRITE "/home/ebrahim/Desktop/ros2/build/lunabotics_model/${CMAKE_INSTALL_MANIFEST}"
+string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
+       "${CMAKE_INSTALL_MANIFEST_FILES}")
+file(WRITE "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
-endif()

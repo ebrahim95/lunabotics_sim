@@ -12,8 +12,14 @@ install(DIRECTORY
   urdf
   launch
   meshes
-  rviz
+  models
+  worlds
   DESTINATION share/${PROJECT_NAME}
+)
+
+# Gazebo resolves model://lunabotics_rover/meshes/... relative to the model.
+install(DIRECTORY meshes/
+  DESTINATION share/${PROJECT_NAME}/models/lunabotics_rover/meshes
 )
 
 if(BUILD_TESTING)

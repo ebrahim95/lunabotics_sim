@@ -1,1 +1,1 @@
-urdf;xacro;robot_state_publisher;joint_state_publisher_gui;rviz2;ament_index_python;ament_lint_auto;ament_lint_common
+urdf;xacro;robot_state_publisher;joint_state_publisher_gui;rviz2;ros_gz_sim;ros_gz_bridge;ament_index_python;ament_lint_auto;ament_lint_common

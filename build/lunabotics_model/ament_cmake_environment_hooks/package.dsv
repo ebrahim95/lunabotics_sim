@@ -1,5 +1,4 @@
 source;share/lunabotics_model/local_setup.bash
 source;share/lunabotics_model/local_setup.dsv
-source;share/lunabotics_model/local_setup.fish
 source;share/lunabotics_model/local_setup.sh
 source;share/lunabotics_model/local_setup.zsh

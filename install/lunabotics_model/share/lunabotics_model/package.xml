@@ -14,6 +14,8 @@
   <depend>robot_state_publisher</depend>
   <depend>joint_state_publisher_gui</depend>
   <depend>rviz2</depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
 
   <exec_depend>ament_index_python</exec_depend>
   <test_depend>ament_lint_auto</test_depend>
@@ -21,5 +23,6 @@
 
   <export>
     <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_model_path="${prefix}/models"/>
   </export>
 </package>
