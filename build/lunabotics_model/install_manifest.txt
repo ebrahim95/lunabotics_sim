@@ -21,7 +21,6 @@
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/bucket.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___403.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/model.config
-/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/model.sdf
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/worlds/lunabotics.world.sdf
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___1.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_40___40___407.stl
@@ -42,6 +41,7 @@
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_57BLR50_24_01_P1_Back_Mirrored.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/bucket.stl
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/meshes/_30___30___403.stl
+/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/models/lunabotics_rover/model.sdf
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/ament_index/resource_index/package_run_dependencies/lunabotics_model
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/ament_index/resource_index/parent_prefix_path/lunabotics_model
 /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/environment/ament_prefix_path.sh

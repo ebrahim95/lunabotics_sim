@@ -7,6 +7,22 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+
+# Create the Gazebo model from the CAD URDF at configure time.  The generator
+# flattens the fixed CAD assembly into visuals and leaves the four wheels as
+# physics joints for the AWD controller.
+set(GAZEBO_MODEL_SDF "${CMAKE_CURRENT_BINARY_DIR}/lunabotics_rover.sdf")
+execute_process(
+  COMMAND ${Python3_EXECUTABLE}
+    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_gazebo_model.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/urdf/assembly_1.urdf"
+  OUTPUT_FILE "${GAZEBO_MODEL_SDF}"
+  RESULT_VARIABLE GAZEBO_MODEL_RESULT
+)
+if(NOT GAZEBO_MODEL_RESULT EQUAL 0)
+  message(FATAL_ERROR "Could not generate Gazebo model from assembly_1.urdf")
+endif()
 
 install(DIRECTORY
   urdf
@@ -20,6 +36,11 @@ install(DIRECTORY
 # Gazebo resolves model://lunabotics_rover/meshes/... relative to the model.
 install(DIRECTORY meshes/
   DESTINATION share/${PROJECT_NAME}/models/lunabotics_rover/meshes
+)
+
+install(FILES ${GAZEBO_MODEL_SDF}
+  DESTINATION share/${PROJECT_NAME}/models/lunabotics_rover
+  RENAME model.sdf
 )
 
 if(BUILD_TESTING)

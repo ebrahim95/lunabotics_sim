@@ -57,6 +57,10 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/lunabotics_model/models/lunabotics_rover" TYPE FILE RENAME "model.sdf" FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/lunabotics_rover.sdf")
+endif()
+
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/ament_index/resource_index/package_run_dependencies" TYPE FILE FILES "/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_index/share/ament_index/resource_index/package_run_dependencies/lunabotics_model")
 endif()
 
