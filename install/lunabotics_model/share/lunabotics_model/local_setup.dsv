@@ -1,2 +1,1 @@
-source;share/lunabotics_model/environment/ament_prefix_path.sh
-source;share/lunabotics_model/environment/path.sh
+/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.dsv

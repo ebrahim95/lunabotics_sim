@@ -91,7 +91,9 @@ def main():
     add = out.append
     add('<?xml version="1.0" ?>')
     add('<sdf version="1.9"><model name="lunabotics_rover"><self_collide>false</self_collide>')
-    add('<link name="base_link"><pose>0 0 0.38 0 0 0</pose>')
+    # Keep the static CAD frame on the same vertical reference as the wheel
+    # links.  This makes each wheel's bolt circle meet its motor flange.
+    add(f'<link name="base_link"><pose>0 0 {GROUND_CLEARANCE} 0 0 0</pose>')
     add('<inertial><mass>55</mass><inertia><ixx>5</ixx><iyy>7</iyy><izz>8</izz></inertia></inertial>')
     add('<collision name="chassis_collision"><geometry><box><size>1.15 0.72 0.24</size></box></geometry></collision>')
 
