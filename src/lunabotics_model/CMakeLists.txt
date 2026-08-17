@@ -13,9 +13,15 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 # flattens the fixed CAD assembly into visuals and leaves the four wheels as
 # physics joints for the AWD controller.
 set(GAZEBO_MODEL_SDF "${CMAKE_CURRENT_BINARY_DIR}/lunabotics_rover.sdf")
+# Make CMake reconfigure whenever the generator changes.
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_gazebo_model.py"
+  "${CMAKE_CURRENT_BINARY_DIR}/generate_gazebo_model.py"
+  COPYONLY
+)
 execute_process(
   COMMAND ${Python3_EXECUTABLE}
-    "${CMAKE_CURRENT_SOURCE_DIR}/scripts/generate_gazebo_model.py"
+    "${CMAKE_CURRENT_BINARY_DIR}/generate_gazebo_model.py"
     "${CMAKE_CURRENT_SOURCE_DIR}/urdf/assembly_1.urdf"
   OUTPUT_FILE "${GAZEBO_MODEL_SDF}"
   RESULT_VARIABLE GAZEBO_MODEL_RESULT
