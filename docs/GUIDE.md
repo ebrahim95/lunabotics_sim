@@ -432,6 +432,7 @@ Odometry rotation is still only approximate (~20% off).
 lunabotics_sim/
 ├── README.md                     how to install, build, run, control
 ├── docs/GUIDE.md                 this file
+├── .gitignore                    ignores build/, install/, log/
 ├── old_urdf/                     first Onshape export (chassis only, ROS 1) — unused
 └── src/lunabotics_model/         the ROS 2 package
     ├── package.xml               package name and dependencies
@@ -457,6 +458,26 @@ lunabotics_sim/
 
 **GENERATED** files are rewritten by the scripts. Never edit them by hand —
 change the script and re-run it.
+
+### What reads and writes what
+
+| File | Kind | Reads | Writes / used by |
+|---|---|---|---|
+| `scripts/fix_kinematics.py` | source | `urdf/assembly_1.urdf`, `meshes/*.stl` | writes `assembly_1_fixed.urdf`, `belt_animator.yaml`, `bucket_controller.yaml` |
+| `scripts/add_ros2_control.py` | source | `assembly_1_fixed.urdf`, `belt_animator.yaml` | writes `assembly_1_sim.urdf` |
+| `scripts/belt_animator.py` | source (ROS node) | `belt_animator.yaml`, `/joint_states` | publishes `/bucket_position_controller/commands`, `/bucket_joint_states` |
+| `urdf/assembly_1.urdf` | CAD input | — | read by `fix_kinematics.py` |
+| `urdf/assembly_1_fixed.urdf` | generated | — | used by `display.launch.py` (RViz) |
+| `urdf/assembly_1_sim.urdf` | generated | — | used by `gazebo.launch.py` |
+| `config/controllers.yaml` | source | — | used by `gazebo.launch.py` (controller manager, spawner) |
+| `config/belt_animator.yaml` | generated | — | used by both launch files, `add_ros2_control.py` |
+| `config/bucket_controller.yaml` | generated | — | used by `gazebo.launch.py` (bucket spawner) |
+| `launch/gazebo.launch.py` | source | `assembly_1_sim.urdf`, all three configs | starts Gazebo, controllers, `belt_animator`, RViz |
+| `launch/display.launch.py` | source | `assembly_1_fixed.urdf`, `belt_animator.yaml` | starts RViz, joint sliders, `belt_animator` |
+| `meshes/*.stl` | CAD input | — | read by `fix_kinematics.py`; drawn by RViz and Gazebo |
+
+Only edit the **source** files. Re-run the two scripts after changing them
+or after a new Onshape export (see the README).
 
 ---
 
