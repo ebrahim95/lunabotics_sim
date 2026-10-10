@@ -13,9 +13,19 @@ install(DIRECTORY
   launch
   meshes
   rviz
+  config
   DESTINATION share/${PROJECT_NAME}
 )
 
+# Install Python helper scripts (belt animator, URDF fixer/patcher) as
+# executables under lib/${PROJECT_NAME} so `ros2 run` / launch files
+# can find them on the path.
+install(PROGRAMS
+  scripts/belt_animator.py
+  scripts/fix_kinematics.py
+  scripts/add_ros2_control.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   # the following line skips the linter which checks for copyrights
