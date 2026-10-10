@@ -2,8 +2,16 @@ import os
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import AppendEnvironmentVariable, IncludeLaunchDescription, TimerAction
+from launch.actions import (
+    AppendEnvironmentVariable,
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    SetEnvironmentVariable,
+    TimerAction,
+)
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 
@@ -32,6 +40,22 @@ def generate_launch_description():
     gz_resource_path = AppendEnvironmentVariable(
         "GZ_SIM_RESOURCE_PATH", os.path.dirname(pkg_share)
     )
+
+    gpu_arg = DeclareLaunchArgument(
+        "gpu",
+        default_value="false",
+        description="Render on the NVIDIA GPU on hybrid-graphics laptops "
+                    "(PRIME on-demand). Only affects rendering; physics is CPU-only.",
+    )
+    # PRIME render offload: route GLX and EGL (Gazebo uses both) to NVIDIA.
+    nvidia_env = [
+        SetEnvironmentVariable(name, value, condition=IfCondition(LaunchConfiguration("gpu")))
+        for name, value in (
+            ("__NV_PRIME_RENDER_OFFLOAD", "1"),
+            ("__GLX_VENDOR_LIBRARY_NAME", "nvidia"),
+            ("__EGL_VENDOR_LIBRARY_FILENAMES", "/usr/share/glvnd/egl_vendor.d/10_nvidia.json"),
+        )
+    ]
 
     gz_sim = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -73,11 +97,13 @@ def generate_launch_description():
         executable="spawner",
         arguments=[
             "joint_state_broadcaster",
-            "wheel_velocity_controller",
+            "diff_drive_controller",
             "belt_velocity_controller",
             "excavator_lift_controller",
             "--param-file", controllers_config,
             "--controller-manager-timeout", "60",
+            # Plain /cmd_vel, like teleop_twist_keyboard's default topic.
+            "--controller-ros-args", "-r /diff_drive_controller/cmd_vel:=/cmd_vel",
         ],
         output="screen",
     )
@@ -110,6 +136,8 @@ def generate_launch_description():
     # actually loaded the model and controller_manager is available.
     return LaunchDescription(
         [
+            gpu_arg,
+            *nvidia_env,
             gz_resource_path,
             gz_sim,
             robot_state_publisher,
