@@ -26,6 +26,7 @@ install(PROGRAMS
   scripts/fix_kinematics.py
   scripts/add_ros2_control.py
   scripts/generate_arena_world.py
+  scripts/bekker_terramechanics.py
   DESTINATION lib/${PROJECT_NAME}
 )
 if(BUILD_TESTING)

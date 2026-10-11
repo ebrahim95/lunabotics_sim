@@ -1,6 +1,6 @@
 import os
 
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_prefix, get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     AppendEnvironmentVariable,
@@ -42,21 +42,17 @@ def generate_launch_description():
     #       --input urdf/assembly_1.urdf --output urdf/assembly_1_fixed.urdf
     #   ros2 run lunabotics_model add_ros2_control.py \
     #       --input urdf/assembly_1_fixed.urdf --output urdf/assembly_1_sim.urdf
-    urdf_path = os.path.join(pkg_share, "urdf", "assembly_1_sim.urdf")
     controllers_config = os.path.join(pkg_share, "config", "controllers.yaml")
     belt_animator_config = os.path.join(pkg_share, "config", "belt_animator.yaml")
     bucket_controller_config = os.path.join(pkg_share, "config", "bucket_controller.yaml")
 
-    # The URDF is read as plain text, not through xacro, so expand the
-    # $(find ...) in the gz_ros2_control <parameters> tag ourselves --
-    # otherwise the controller manager never sees controllers.yaml.
-    with open(urdf_path, "r") as f:
-        urdf = f.read().replace("$(find lunabotics_model)", pkg_share)
-    robot_description = {"robot_description": urdf}
-
-    # Let Gazebo resolve package://lunabotics_model/meshes/... URIs.
+    # Let Gazebo resolve package://lunabotics_model/meshes/... URIs, and find
+    # the bekker_terramechanics Python system (soil:=bekker).
     gz_resource_path = AppendEnvironmentVariable(
         "GZ_SIM_RESOURCE_PATH", os.path.dirname(pkg_share)
+    )
+    gz_python_path = AppendEnvironmentVariable(
+        "PYTHONPATH", os.path.join(get_package_prefix("lunabotics_model"), "lib", "lunabotics_model")
     )
 
     gpu_arg = DeclareLaunchArgument(
@@ -82,9 +78,28 @@ def generate_launch_description():
         DeclareLaunchArgument("x", default_value="", description="spawn x (m)"),
         DeclareLaunchArgument("y", default_value="", description="spawn y (m)"),
         DeclareLaunchArgument("yaw", default_value="", description="spawn heading (rad)"),
+        DeclareLaunchArgument("soil", default_value="rigid",
+                              description="rigid: hard floor + wheel slip; bekker: wheels sink "
+                                          "into soft soil (Bekker-Wong terramechanics)."),
     ]
 
     def launch_world(context):
+        soil = LaunchConfiguration("soil").perform(context)
+        if soil not in ("rigid", "bekker"):
+            raise ValueError(f"soil:={soil} -- use rigid or bekker")
+        urdf_path = os.path.join(
+            pkg_share, "urdf", "assembly_1_sim.urdf" if soil == "rigid" else "assembly_1_sim_bekker.urdf")
+        # The URDF is read as plain text, not through xacro, so expand the
+        # $(find ...) in the gz_ros2_control <parameters> tag ourselves --
+        # otherwise the controller manager never sees controllers.yaml.
+        with open(urdf_path, "r") as f:
+            urdf = f.read().replace("$(find lunabotics_model)", pkg_share)
+        robot_state_publisher = Node(
+            package="robot_state_publisher",
+            executable="robot_state_publisher",
+            output="screen",
+            parameters=[{"robot_description": urdf}],
+        )
         world = LaunchConfiguration("world").perform(context)
         name = os.path.basename(world).replace(".world.sdf", "").replace(".sdf", "")
         x, y, yaw = WORLD_SPAWN.get(name, ("0.0", "0.0", "0.0"))
@@ -106,14 +121,8 @@ def generate_launch_description():
                        "-x", x, "-y", y, "-z", "0.01", "-Y", yaw],
             output="screen",
         )
-        return [gz_sim, spawn_robot]
+        return [gz_sim, robot_state_publisher, spawn_robot]
 
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        output="screen",
-        parameters=[robot_description],
-    )
 
     clock_bridge = Node(
         package="ros_gz_bridge",
@@ -173,8 +182,8 @@ def generate_launch_description():
             *nvidia_env,
             *world_args,
             gz_resource_path,
+            gz_python_path,
             OpaqueFunction(function=launch_world),
-            robot_state_publisher,
             clock_bridge,
             TimerAction(period=5.0, actions=[controller_spawner]),
             TimerAction(period=5.0, actions=[bucket_controller_spawner]),

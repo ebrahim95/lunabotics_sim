@@ -40,6 +40,18 @@ craters, rocks, column; the robot starts in the starting zone):
 ros2 launch lunabotics_model gazebo.launch.py world:=artemis_arena
 ```
 
+Soft soil instead of a rigid floor (wheels sink and slip in BP-1; runs slower):
+
+```bash
+ros2 launch lunabotics_model gazebo.launch.py world:=artemis_arena soil:=bekker
+```
+
+Print the soil model's sinkage, slip and wheel forces every 2 s:
+
+```bash
+LUNA_TERRA_DEBUG=1 ros2 launch lunabotics_model gazebo.launch.py world:=artemis_arena soil:=bekker
+```
+
 Start somewhere else in the arena (metres from the starting-zone corner, heading in radians):
 
 ```bash
@@ -109,7 +121,10 @@ Edit the constants at the top of `src/lunabotics_model/scripts/fix_kinematics.py
 `WHEEL_EFFORT`, `WHEEL_VELOCITY`), then regenerate as in
 "Update the model from Onshape" above.
 
-Wheel slip on the regolith: edit `SLIP_COMPLIANCE_LONGITUDINAL` and
+Soft-soil constants (`soil:=bekker`): edit `SOIL` at the top of
+`src/lunabotics_model/scripts/bekker_terramechanics.py`, then rebuild.
+
+Wheel slip on the regolith (`soil:=rigid`): edit `SLIP_COMPLIANCE_LONGITUDINAL` and
 `SLIP_COMPLIANCE_LATERAL` at the top of
 `src/lunabotics_model/scripts/add_ros2_control.py`, then regenerate the same way.
 

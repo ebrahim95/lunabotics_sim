@@ -157,9 +157,13 @@ def world_sdf(floor_uri, rocks):
     rgba = BP1_COLOUR + " 1"
     surface = (f"<surface><friction><ode><mu>{BP1_FRICTION}</mu><mu2>{BP1_FRICTION}</mu2></ode>"
                f"</friction></surface>")
+    # Floor collide bitmask 0x02: with soil:=bekker the wheels use 0x01, so they
+    # pass through the rigid floor and bekker_terramechanics.py supports them.
+    floor_surface = (f"<surface><friction><ode><mu>{BP1_FRICTION}</mu><mu2>{BP1_FRICTION}</mu2></ode>"
+                     f"</friction><contact><collide_bitmask>0x02</collide_bitmask></contact></surface>")
     parts = [f"""
     <model name="bp1_floor"><static>true</static><link name="link">
-      <collision name="c"><geometry><mesh><uri>{floor_uri}</uri></mesh></geometry>{surface}</collision>
+      <collision name="c"><geometry><mesh><uri>{floor_uri}</uri></mesh></geometry>{floor_surface}</collision>
       <visual name="v"><geometry><mesh><uri>{floor_uri}</uri></mesh></geometry>
         <material><ambient>{rgba}</ambient><diffuse>{rgba}</diffuse><specular>0.05 0.05 0.05 1</specular></material>
       </visual></link></model>"""]
@@ -227,6 +231,8 @@ def main():
     os.makedirs(os.path.join(args.output_dir, "meshes"), exist_ok=True)
     X, Y, Z = terrain(craters, args.seed or 0)
     ntri = write_stl(os.path.join(args.output_dir, "meshes", "artemis_arena_floor.stl"), X, Y, Z)
+    # Same surface as a height grid, for bekker_terramechanics.py (soil:=bekker).
+    np.savez(os.path.join(args.output_dir, "artemis_arena_height.npz"), xs=X[:, 0], ys=Y[0, :], z=Z)
     with open(os.path.join(args.output_dir, "artemis_arena.world.sdf"), "w") as f:
         f.write(world_sdf("package://lunabotics_model/worlds/meshes/artemis_arena_floor.stl", rocks))
     print(f"Wrote Artemis Arena ({LENGTH} x {WIDTH} m, BP-1 floor {ntri} triangles): "

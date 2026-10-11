@@ -389,6 +389,48 @@ flange (hidden inside the hub) has none. Change the values with
 The default layout is the guidebook drawing's example; `--seed N` places
 rocks and craters randomly in their zones, like the judges do each run.
 
+### Soft soil: Bekker–Wong terramechanics (`soil:=bekker`)
+
+`soil:=rigid` (the default) drives on a hard floor with WheelSlip.
+`soil:=bekker` makes the wheels sink into the BP-1 instead. The wheels stop
+colliding with the arena floor (collision masks: wheels `0x01`, floor
+`0x02`; rocks and the chassis still collide normally), and a Gazebo
+**Python system**, `scripts/bekker_terramechanics.py`, applies soil forces
+to each wheel every physics step:
+
+| Force | Model | Meaning |
+|---|---|---|
+| Support | Bekker pressure–sinkage, W = (3−n)/3 · (k_c + b·k_φ) · √D · z^((2n+1)/2) | the deeper the wheel sinks, the harder the soil pushes back |
+| Traction | Janosi–Hanamoto shear, H = (A·c + W·tan φ)(1 − K/(sL)(1 − e^(−sL/K))) | the more the wheel slips (s), the more it can push |
+| Rolling resistance | compaction, R = b(k_c/b + k_φ) z^(n+1)/(n+1) | the wheel keeps climbing out of its own rut |
+| Sideways | same shear curve with sideways slip | skid-steer wheels plough sideways when turning |
+| Torque | the forces act at the bottom of the wheel | the motors feel the load |
+
+(z sinkage, b wheel width, D wheel diameter, L = √(Dz) contact length,
+A = bL contact area.) The soil surface comes from the arena's height grid
+(`worlds/artemis_arena_height.npz`), so craters work; the wheel geometry
+from `config/terramechanics.yaml` (written by `add_ros2_control.py`).
+
+**Soil constants:** φ = 39° and near-zero cohesion are BP-1's; the Bekker
+constants k_c = 1400, k_φ = 820 000, n = 1 and K = 18 mm are standard
+**lunar regolith** values — no BP-1-specific ones were found.
+
+**What it does (arena tests, 50 kg robot):**
+
+| | rigid + WheelSlip | bekker |
+|---|---|---|
+| Sinkage | 0 | 24 mm |
+| Slip while cruising | ~2.5% | ~12% |
+| Forward 1.2 m commanded | ~1.2 m | 1.06 m |
+| Turn 2.0 rad commanded | ~1.95 rad | 1.30 rad |
+| Sim speed | ~0.66× | ~0.42× (the Python plugin) |
+
+Set `LUNA_TERRA_DEBUG=1` to print sinkage, slip and wheel forces every 2 s.
+The model treats each wheel as a smooth cylinder (no grousers), doesn't
+leave ruts in the terrain, and isn't for the buckets (they still hit the
+rigid floor). On the empty world the soil is flat at z = 0 but the wheels
+still touch the default ground plane, so use it in the arena.
+
 ### Physics engine
 
 Gazebo can use different physics engines. The default, **DART**, is used
@@ -607,6 +649,10 @@ change the script and re-run it.
 | `meshes/*.stl` | CAD input | — | read by `fix_kinematics.py`; drawn by RViz, Gazebo and MuJoCo |
 | `scripts/generate_arena_world.py` | source | — | writes `worlds/artemis_arena.world.sdf`, `worlds/meshes/artemis_arena_floor.stl` |
 | `worlds/artemis_arena.world.sdf` | generated | `worlds/meshes/artemis_arena_floor.stl` | Gazebo world for `world:=artemis_arena` |
+| `scripts/bekker_terramechanics.py` | source (Gazebo Python system) | `config/terramechanics.yaml`, `worlds/artemis_arena_height.npz` | applies soil forces to the wheels (`soil:=bekker`) |
+| `config/terramechanics.yaml` | generated | — | wheel geometry for the soil model, written by `add_ros2_control.py` |
+| `urdf/assembly_1_sim_bekker.urdf` | generated | — | robot for `soil:=bekker`, written by `add_ros2_control.py` |
+| `worlds/artemis_arena_height.npz` | generated | — | arena surface as a height grid, written by `generate_arena_world.py` |
 | `mujoco_dig/dig_test.py` | source | `assembly_1_fixed.urdf`, `belt_animator.yaml`, `meshes/*.stl` | builds and runs the MuJoCo digging scene |
 
 Only edit the **source** files. Re-run the two scripts after changing them
@@ -984,9 +1030,10 @@ not a faithful copy of the robot in BP-1.
 
 ### Not modelled
 
-1. **Rigid ground.** Real BP-1 is 45 cm of loose material: wheels sink,
-   bulldoze and lose traction climbing out of craters. This is the biggest
-   gap.
+1. **Soil.** With `soil:=rigid` the ground is hard. `soil:=bekker` adds
+   sinkage, slip and rolling resistance from standard terramechanics, but
+   with lunar-regolith constants (not measured BP-1 ones), smooth wheels,
+   no ruts and no bulldozing.
 2. **No digging in Gazebo.** Buckets scrape a hard floor. The MuJoCo test
    digs, but with 2.4 cm pebbles (real grains are fractions of a mm) and
    buckets that never stall.
@@ -1067,6 +1114,10 @@ the CPU anyway.
 test that timed the robot with the wall clock saw a fake "45% wheel slip".
 Use the timestamps Gazebo and ROS (`use_sim_time`) provide.
 
+**`diff_drive_controller` publishes no odometry until its first command.**
+A test that waited for `/diff_drive_controller/odom` before sending
+anything waited forever. Send a stop command first.
+
 **Old Gazebo servers kept running in the background** after tests and
 answered queries meant for the new one. If results look stale, check
 `ps aux | grep gz-sim` and stop leftovers.
@@ -1078,6 +1129,7 @@ answered queries meant for the new one. If results look stale, check
 | Term | Meaning |
 |---|---|
 | **Artemis Arena** | the Lunabotics competition arena at Kennedy Space Center |
+| **Bekker–Wong** | standard terramechanics model of wheels in soft soil |
 | **base_link** | the robot's main frame: x forward, y left, z up |
 | **BP-1** | Black Point-1, crushed-basalt lunar regolith simulant in the arena |
 | **colcon** | ROS 2 build tool |
