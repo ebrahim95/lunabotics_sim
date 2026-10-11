@@ -66,8 +66,10 @@ LIFT_LOWER = -0.15
 LIFT_UPPER = 0.15
 LIFT_EFFORT = 500.0     # N
 LIFT_VELOCITY = 0.05    # m/s
-ROLLER_EFFORT = 50.0    # N*m
-ROLLER_VELOCITY = 20.0  # rad/s
+# Belt drive: TSINY TS-30GZ6287-R-LS 12 V worm-gear motor, 50 rpm version,
+# ~6 N*m rated (seller listings), assumed direct on the drive roller (1:1).
+ROLLER_EFFORT = 6.0                      # N*m
+ROLLER_VELOCITY = 50 * 2 * math.pi / 60  # rad/s (50 rpm -> ~0.25 m/s belt speed)
 ROLLER_DAMPING = 0.01
 BUCKET_EFFORT = 200.0   # N / N*m holding each bucket on its track
 BUCKET_VELOCITY = 5.0   # m/s, rad/s

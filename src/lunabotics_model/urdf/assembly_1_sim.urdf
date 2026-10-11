@@ -1774,7 +1774,7 @@
         <child link="roller_1" />
         <origin xyz="6.40145597e-08 -1.8947859e-07 4.9860116e-13" rpy="3.1415918 -2.51399226e-06 -1.24499" />
         <axis xyz="0 0 -1" />
-        <limit effort="50" velocity="20" />
+        <limit effort="6" velocity="5.23598776" />
         <dynamics damping="0.01" />
     </joint>
     <joint name="excavator_lift" type="prismatic">
@@ -1957,7 +1957,7 @@
         <child link="roller" />
         <origin xyz="3.33066907e-15 2.77555756e-16 -1.95954364e-14" rpy="3.1415918 -2.51399451e-06 1.8966" />
         <axis xyz="0 0 -1" />
-        <limit effort="50" velocity="20" />
+        <limit effort="6" velocity="5.23598776" />
         <dynamics damping="0.01" />
     </joint>
     <joint name="ladder_bottom_shaft" type="fixed">
