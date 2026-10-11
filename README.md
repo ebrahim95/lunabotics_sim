@@ -100,7 +100,7 @@ Run the excavator belt in rad/s, up to `5.24` (the motor's 50 rpm; `0.0` to stop
 ros2 topic pub -w 1 --times 3 /belt_velocity_controller/commands std_msgs/msg/Float64MultiArray "{data: [3.0]}"
 ```
 
-Lower the ladder (range `-0.15` to `0.15`), then raise it back:
+Lower the ladder (range `-0.152` to `0`, in metres along its rails; `0` is fully raised), then raise it back:
 
 ```bash
 ros2 topic pub -w 1 --times 3 /excavator_lift_controller/commands std_msgs/msg/Float64MultiArray "{data: [-0.15]}"
@@ -127,7 +127,7 @@ controller's top speeds in `config/controllers.yaml`):
 |---|---|---|---|
 | Wheel motors (×4), `revolute_1*` | **20 N·m** (`WHEEL_EFFORT`) | **7.33 rad/s = 70 rpm** (`WHEEL_VELOCITY`), ≈ 1.3 m/s | 57BLR70-24-02-HG50 datasheet: rated 17.63 N·m at 70 rpm, gearbox 20 N·m continuous / 40 N·m momentary |
 | Drive roller (belt), `drive_roller_joint` | **6 N·m** (`ROLLER_EFFORT`) | **5.24 rad/s = 50 rpm** (`ROLLER_VELOCITY`), ≈ 0.25 m/s belt | TSINY TS-30GZ6287-R-LS 12 V worm-gear motor, 50 rpm version (~6 N·m rated, seller listings); assumed direct on the roller |
-| Excavator lift, `excavator_lift` | 500 N (`LIFT_EFFORT`) | 0.05 m/s (`LIFT_VELOCITY`), travel −0.15 to +0.15 m | placeholder — real actuator unknown |
+| Excavator lift, `excavator_lift` | **156 N = 35 lb** (`LIFT_EFFORT`) | **0.0508 m/s = 2"/s** (`LIFT_VELOCITY`); travel **−0.152 to 0 m** (6" stroke down from the CAD pose) | Progressive Automations PA-14-6-35 (12 V; 1.38"/s at full load); assumed pushing straight along the rails, CAD pose = retracted |
 | Bucket track joints (×30) | 200 N / N·m (`BUCKET_EFFORT`) | 5 m/s / rad/s (`BUCKET_VELOCITY`) | simulation only (moves the buckets round the belt) |
 | Drive controller | — | 1.0 m/s forward, 2.0 rad/s turning | `linear.x.max_velocity`, `angular.z.max_velocity` in `config/controllers.yaml` |
 
@@ -196,6 +196,6 @@ Options:
 | `--lift` | `-0.12` | dig depth: ladder position on its rails (m) |
 | `--advance` | `0.005` | robot creep speed into the regolith (m/s) |
 | `--start-lift` | `0.0` | ladder position before digging starts (m) |
-| `--plunge` | `0.06` | speed the ladder is lowered into the regolith (m/s) |
+| `--plunge` | `0.05` | speed the ladder is lowered into the regolith (m/s) |
 | `--radius` | `0.012` | regolith particle radius (m) |
 | `--layers` | `4` | layers of particles in the pit |

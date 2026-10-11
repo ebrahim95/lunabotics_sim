@@ -297,7 +297,7 @@ def main():
     ap.add_argument("--speed", type=float, default=0.15, help="belt speed in m/s (+ = dig direction)")
     ap.add_argument("--lift", type=float, default=-0.12, help="dig depth: ladder position on its rails (m, + = up)")
     ap.add_argument("--start-lift", type=float, default=0.0, help="ladder position while the pile settles (m)")
-    ap.add_argument("--plunge", type=float, default=0.06, help="speed the ladder is lowered into the pile (m/s)")
+    ap.add_argument("--plunge", type=float, default=0.05, help="speed the ladder is lowered into the pile (m/s); the PA-14 lift actuator does 0.05")
     ap.add_argument("--advance", type=float, default=0.005, help="robot creep speed into the pile (m/s)")
     ap.add_argument("--radius", type=float, default=0.012, help="regolith particle radius (m)")
     ap.add_argument("--layers", type=int, default=4, help="layers of particles in the pile")

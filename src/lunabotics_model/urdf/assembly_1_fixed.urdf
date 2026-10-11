@@ -1782,7 +1782,7 @@
         <axis xyz="1 0 0" />
         <parent link="slider_bracket" />
         <child link="30___30___403_5" />
-        <limit effort="500" velocity="0.05" lower="-0.15" upper="0.15" />
+        <limit effort="155.68777" velocity="0.0508" lower="-0.1524" upper="0" />
     </joint>
     <joint name="fastened_1" type="fixed">
         <origin xyz="0.65 2.07643401e-06 -0.1325" rpy="3.14159 7.02121982e-12 -3.14159" />
