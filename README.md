@@ -52,6 +52,10 @@ Print the soil model's sinkage, slip and wheel forces every 2 s:
 LUNA_TERRA_DEBUG=1 ros2 launch lunabotics_model gazebo.launch.py world:=artemis_arena soil:=bekker
 ```
 
+Driving on `soil:=bekker`: the robot sits ~24 mm down in the BP-1 (its
+wheels look slightly below the floor), accelerates more slowly, cruises
+~12% slower than commanded, and turns about two-thirds as far as commanded.
+
 Start somewhere else in the arena (metres from the starting-zone corner, heading in radians):
 
 ```bash
@@ -113,6 +117,19 @@ python3 scripts/fix_kinematics.py --input urdf/assembly_1.urdf --output urdf/ass
 python3 scripts/add_ros2_control.py --input urdf/assembly_1_fixed.urdf --output urdf/assembly_1_sim.urdf
 cd ~/Desktop/lunabotics_sim && colcon build --packages-select lunabotics_model
 ```
+
+## Motor and actuator limits
+
+Set in `src/lunabotics_model/scripts/fix_kinematics.py` (and the drive
+controller's top speeds in `config/controllers.yaml`):
+
+| Actuator | Torque / force limit | Speed limit | Source |
+|---|---|---|---|
+| Wheel motors (×4), `revolute_1*` | **20 N·m** (`WHEEL_EFFORT`) | **7.33 rad/s = 70 rpm** (`WHEEL_VELOCITY`), ≈ 1.3 m/s | 57BLR70-24-02-HG50 datasheet: rated 17.63 N·m at 70 rpm, gearbox 20 N·m continuous / 40 N·m momentary |
+| Drive roller (belt), `drive_roller_joint` | 50 N·m (`ROLLER_EFFORT`) | 20 rad/s (`ROLLER_VELOCITY`) | placeholder — real belt motor unknown |
+| Excavator lift, `excavator_lift` | 500 N (`LIFT_EFFORT`) | 0.05 m/s (`LIFT_VELOCITY`), travel −0.15 to +0.15 m | placeholder — real actuator unknown |
+| Bucket track joints (×30) | 200 N / N·m (`BUCKET_EFFORT`) | 5 m/s / rad/s (`BUCKET_VELOCITY`) | simulation only (moves the buckets round the belt) |
+| Drive controller | — | 1.0 m/s forward, 2.0 rad/s turning | `linear.x.max_velocity`, `angular.z.max_velocity` in `config/controllers.yaml` |
 
 ## Change the robot's mass, motor limits or wheel slip
 

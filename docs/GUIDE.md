@@ -425,6 +425,14 @@ constants k_c = 1400, k_φ = 820 000, n = 1 and K = 18 mm are standard
 | Turn 2.0 rad commanded | ~1.95 rad | 1.30 rad |
 | Sim speed | ~0.66× | ~0.42× (the Python plugin) |
 
+**Driving it** (teleop or autonomy): the robot sits ~24 mm down in the
+BP-1, so in the Gazebo window its wheels look slightly sunk below the floor
+— that's the sinkage, not a display bug. It accelerates more slowly than
+on the rigid floor, cruises ~12% slower than commanded (and odometry
+overestimates distance by about that much), and turns about two-thirds as
+far as commanded. The 20 N·m wheel motors work harder: cruising takes
+~4 N·m per wheel just to overcome the rolling resistance of the rut.
+
 Set `LUNA_TERRA_DEBUG=1` to print sinkage, slip and wheel forces every 2 s.
 The model treats each wheel as a smooth cylinder (no grousers), doesn't
 leave ruts in the terrain, and isn't for the buckets (they still hit the
@@ -751,6 +759,24 @@ mass, that's realistic for a skid-steer robot: the wheels stall against a
 wall instead of spinning forever, and pivoting on the spot needs wheel slip
 (below) to work at all. Edit the
 constants at the top of `fix_kinematics.py` if you know better masses.
+
+**All motor and actuator limits** set by `fix_kinematics.py` (edit the
+named constants at its top; regenerate as in the README):
+
+| Actuator | Torque / force limit | Speed limit | Source |
+|---|---|---|---|
+| Wheel motors (×4), `revolute_1*` | **20 N·m** (`WHEEL_EFFORT`) | **7.33 rad/s = 70 rpm** (`WHEEL_VELOCITY`), ≈ 1.3 m/s | 57BLR70-24-02-HG50 datasheet: rated 17.63 N·m at 70 rpm, gearbox 20 N·m continuous / 40 N·m momentary |
+| Drive roller (belt), `drive_roller_joint` | 50 N·m (`ROLLER_EFFORT`) | 20 rad/s (`ROLLER_VELOCITY`) | placeholder — real belt motor unknown |
+| Excavator lift, `excavator_lift` | 500 N (`LIFT_EFFORT`) | 0.05 m/s (`LIFT_VELOCITY`), travel −0.15 to +0.15 m | placeholder — real actuator unknown |
+| Bucket track joints (×30) | 200 N / N·m (`BUCKET_EFFORT`) | 5 m/s / rad/s (`BUCKET_VELOCITY`) | simulation only (moves the buckets round the belt) |
+| Drive controller | — | 1.0 m/s forward, 2.0 rad/s turning | `linear.x.max_velocity`, `angular.z.max_velocity` in `config/controllers.yaml` |
+
+What the wheel limit means for a 50 kg robot: four motors at 20 N·m on
+0.1805 m wheels push up to 4 × 20 ÷ 0.1805 ≈ **443 N**, close to the robot's
+weight (490 N). That's plenty to drive and climb on a rigid floor, but
+pivoting on the spot needs the wheels to slip sideways (WheelSlip or the
+soft-soil model) or the motors stall. The wheels never exceed 70 rpm, so
+the robot tops out near 1.3 m/s (the drive controller caps it at 1.0 m/s).
 
 ### The result
 
