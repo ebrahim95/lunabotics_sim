@@ -330,6 +330,34 @@ rigid terrain mesh with BP-1's properties as a surface: friction 0.8
 depressions. Wheels don't sink into it the way they would in real BP-1, but
 they do slip (see "Wheel slip" below).
 
+### What is wheel slip?
+
+**Wheel slip** is when a wheel turns faster than the ground moving past
+it: some of the spin goes into scuffing the ground instead of moving the
+robot. At full speed the wheel surface moves at 1.0 m/s (5.54 rad/s ×
+0.1805 m radius). With no slip the robot moves at 1.0 m/s; with 20% slip it
+moves at 0.8 m/s, and the other 0.2 m/s is the tyre sliding over the ground.
+
+```
+slip = 1 − (ground speed ÷ wheel surface speed)
+```
+
+0% is perfect grip; 100% is spinning in place.
+
+**Why it happens.** A wheel pushes the robot forward by pushing back on the
+ground. Concrete holds firm, so there's little slip. In loose sand like BP-1
+the grains shear and get thrown backwards, so the wheel has to turn further
+to go the same distance — and the harder it pushes (accelerating, climbing
+out of a crater, carrying a load), the more it slips.
+
+**Turning.** A skid-steer robot turns by spinning one side faster than the
+other, which forces the wheels to slide sideways — sideways slip. Without
+it, a high-friction floor would lock the wheels in place.
+
+**Why it matters on the real robot:** odometry drifts (the encoders count
+wheel turns the robot didn't travel), energy is wasted spinning wheels, and
+slip near 100% means the robot is digging itself in.
+
 ### Wheel slip
 
 `add_ros2_control.py` adds Gazebo's **WheelSlip** system to the four drive
