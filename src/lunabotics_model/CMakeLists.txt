@@ -14,6 +14,7 @@ install(DIRECTORY
   meshes
   rviz
   config
+  worlds
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -24,6 +25,7 @@ install(PROGRAMS
   scripts/belt_animator.py
   scripts/fix_kinematics.py
   scripts/add_ros2_control.py
+  scripts/generate_arena_world.py
   DESTINATION lib/${PROJECT_NAME}
 )
 if(BUILD_TESTING)

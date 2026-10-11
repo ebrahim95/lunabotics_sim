@@ -6,6 +6,7 @@ from launch.actions import (
     AppendEnvironmentVariable,
     DeclareLaunchArgument,
     IncludeLaunchDescription,
+    OpaqueFunction,
     SetEnvironmentVariable,
     TimerAction,
 )
@@ -13,6 +14,23 @@ from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
+
+# Where to put the robot in this package's worlds (x, y, yaw), unless the
+# x/y/yaw launch arguments say otherwise.
+WORLD_SPAWN = {
+    # Artemis Arena: middle of the 2 x 2 m starting zone, facing down the arena.
+    "artemis_arena": ("1.0", "1.0", "0.0"),
+}
+
+
+def world_path(pkg_share, world):
+    """`world:=artemis_arena` -> this package's worlds/artemis_arena.world.sdf;
+    anything else (empty.sdf, an absolute path, ...) goes to Gazebo as is."""
+    for candidate in (world, world + ".world.sdf"):
+        path = os.path.join(pkg_share, "worlds", candidate)
+        if os.path.isfile(path):
+            return path
+    return world
 
 
 def generate_launch_description():
@@ -57,29 +75,44 @@ def generate_launch_description():
         )
     ]
 
-    gz_sim = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            os.path.join(
-                get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py"
-            )
-        ),
-        launch_arguments={"gz_args": "empty.sdf -r"}.items(),
-    )
+    world_args = [
+        DeclareLaunchArgument("world", default_value="empty.sdf",
+                              description="Gazebo world: a name from this package's worlds/ "
+                                          "(e.g. artemis_arena) or any world Gazebo can find."),
+        DeclareLaunchArgument("x", default_value="", description="spawn x (m)"),
+        DeclareLaunchArgument("y", default_value="", description="spawn y (m)"),
+        DeclareLaunchArgument("yaw", default_value="", description="spawn heading (rad)"),
+    ]
+
+    def launch_world(context):
+        world = LaunchConfiguration("world").perform(context)
+        name = os.path.basename(world).replace(".world.sdf", "").replace(".sdf", "")
+        x, y, yaw = WORLD_SPAWN.get(name, ("0.0", "0.0", "0.0"))
+        x = LaunchConfiguration("x").perform(context) or x
+        y = LaunchConfiguration("y").perform(context) or y
+        yaw = LaunchConfiguration("yaw").perform(context) or yaw
+        gz_sim = IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(get_package_share_directory("ros_gz_sim"), "launch", "gz_sim.launch.py")
+            ),
+            launch_arguments={"gz_args": world_path(pkg_share, world) + " -r"}.items(),
+        )
+        spawn_robot = Node(
+            package="ros_gz_sim",
+            executable="create",
+            # base_link sits on the ground under the wheels; drop the robot
+            # from just above it so it lands on them.
+            arguments=["-topic", "robot_description", "-name", "lunabotics",
+                       "-x", x, "-y", y, "-z", "0.01", "-Y", yaw],
+            output="screen",
+        )
+        return [gz_sim, spawn_robot]
 
     robot_state_publisher = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="screen",
         parameters=[robot_description],
-    )
-
-    spawn_robot = Node(
-        package="ros_gz_sim",
-        executable="create",
-        # base_link sits on the ground under the wheels; drop the robot from
-        # just above it so it lands on them.
-        arguments=["-topic", "robot_description", "-name", "lunabotics", "-z", "0.01"],
-        output="screen",
     )
 
     clock_bridge = Node(
@@ -138,11 +171,11 @@ def generate_launch_description():
         [
             gpu_arg,
             *nvidia_env,
+            *world_args,
             gz_resource_path,
-            gz_sim,
+            OpaqueFunction(function=launch_world),
             robot_state_publisher,
             clock_bridge,
-            spawn_robot,
             TimerAction(period=5.0, actions=[controller_spawner]),
             TimerAction(period=5.0, actions=[bucket_controller_spawner]),
             TimerAction(period=7.0, actions=[belt_animator]),

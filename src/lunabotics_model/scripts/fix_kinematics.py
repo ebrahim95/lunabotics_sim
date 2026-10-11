@@ -51,6 +51,7 @@ Run this on every fresh Onshape export, then feed the output to
 add_ros2_control.py.
 """
 import argparse
+import math
 import os
 import struct
 import xml.etree.ElementTree as ET
@@ -70,6 +71,21 @@ ROLLER_VELOCITY = 20.0  # rad/s
 ROLLER_DAMPING = 0.01
 BUCKET_EFFORT = 200.0   # N / N*m holding each bucket on its track
 BUCKET_VELOCITY = 5.0   # m/s, rad/s
+# Drive gearmotors: 57BLR70-24-02-HG50 (StepperOnline datasheet): 24 V
+# 172 W brushless motor + 50:1 planetary gearbox, rated 17.63 N*m at
+# 70 rpm, gearbox max permissible 20 N*m (40 N*m momentary), 1.49 kg.
+WHEEL_EFFORT = 20.0                      # N*m, gearbox continuous limit
+WHEEL_VELOCITY = 70 * 2 * math.pi / 60   # rad/s, rated speed (70 rpm)
+DRIVE_MOTOR_MASS = 1.49                  # kg each, datasheet
+DRIVE_MOTOR_INBOARD = 0.10               # m, motor body sits this far inboard of its wheel flange
+# Whole-robot mass. The CAD export has no materials on most parts (motors
+# weigh micrograms, wheels 9 kg each), so masses are rebuilt to this total:
+# drive motors from the datasheet, the frame and excavator parts from CAD,
+# the assumptions below for parts the CAD leaves massless, and the wheels
+# take whatever is left. Edit the assumptions if you know better.
+TOTAL_MASS = 50.0                        # kg, measured
+ELECTRONICS_MASS = 5.0                   # kg, ASSUMED: battery + electronics box
+BIN_MASS = 1.5                           # kg, ASSUMED: regolith bin
 WHEEL_JOINTS = ["revolute_1", "revolute_1_1", "revolute_1_2", "revolute_1_3"]
 WHEELS = ["wheel", "wheel_1", "wheel_mirrored", "wheel_mirrored_1"]
 # -------------------------------------------------------------------------
@@ -226,7 +242,12 @@ def com_world(link, W):
     return (T @ origin_to_T(i.find("origin")) if i is not None else T)[:3, 3]
 
 
+MESH_ROOT = None  # package root, set by fix() for mesh lookups
+
+
 def fix(robot, mesh_root):
+    global MESH_ROOT
+    MESH_ROOT = mesh_root
     W = world_poses(robot)
     links = {l.get("name"): l for l in robot.findall("link")}
     joints = {j.get("name"): j for j in robot.findall("joint")}
@@ -269,6 +290,9 @@ def fix(robot, mesh_root):
     for jn in WHEEL_JOINTS:
         if axis_world[jn] @ ref < 0:
             axis_world[jn] = -axis_world[jn]
+
+    for jn in WHEEL_JOINTS:
+        set_limit(joints[jn], effort=WHEEL_EFFORT, velocity=WHEEL_VELOCITY)
 
     for name, jtype, parent, child, axis in new_joints(W) + wheel_mounts:
         j = ET.SubElement(robot, "joint", name=name, type=jtype)
@@ -332,6 +356,7 @@ def fix(robot, mesh_root):
     belt = add_belt_track(robot, W)
     add_collisions(robot, mesh_root)
     add_base_frame(robot)
+    set_masses(robot)
 
     # Keep joints grouped and ordered for readability.
     for j in sorted(robot.findall("joint"), key=lambda j: j.get("name")):
@@ -388,6 +413,77 @@ def add_base_frame(robot):
     yaw = np.degrees(np.arctan2(forward[1], forward[0]))
     print(f"base_link: root was {abs(yaw + 90):.2f} deg off square; "
           f"wheels touch the ground at base_link z = 0")
+
+
+def set_inertial(link, mass, com, inertia):
+    """Replace a link's <inertial> (com and inertia in the link frame)."""
+    old = link.find("inertial")
+    if old is not None:
+        link.remove(old)
+    el = ET.Element("inertial")
+    ET.SubElement(el, "origin", xyz=fmt(com), rpy="0 0 0")
+    ET.SubElement(el, "mass", value=f"{mass:.6g}")
+    I = inertia
+    ET.SubElement(el, "inertia", ixx=f"{I[0, 0]:.6g}", ixy=f"{I[0, 1]:.6g}", ixz=f"{I[0, 2]:.6g}",
+                  iyy=f"{I[1, 1]:.6g}", iyz=f"{I[1, 2]:.6g}", izz=f"{I[2, 2]:.6g}")
+    link.insert(0, el)
+
+
+def box_inertia(mass, size):
+    x, y, z = size
+    return np.diag([y * y + z * z, x * x + z * z, x * x + y * y]) * mass / 12
+
+
+def set_masses(robot):
+    """Rebuild masses to the real robot's (see TOTAL_MASS and friends)."""
+    W = world_poses(robot)  # base_link frame
+    links = {l.get("name"): l for l in robot.findall("link")}
+    joints = {j.get("name"): j for j in robot.findall("joint")}
+    mass = lambda n: float(links[n].find("inertial/mass").get("value")) if links[n].find("inertial") is not None else 0.0
+
+    def mesh_box(name):
+        """Centre and size of a link's visual mesh, in the link frame."""
+        vis = links[name].find("visual")
+        T = origin_to_T(vis.find("origin"))
+        rel = vis.find("geometry/mesh").get("filename").split("://", 1)[-1].split("/", 1)[-1]
+        V = load_stl_vertices(os.path.join(MESH_ROOT, rel))
+        P = (T[:3, :3] @ V.T).T + T[:3, 3]
+        return (P.min(0) + P.max(0)) / 2, P.max(0) - P.min(0)
+
+    # Drive motors: four point masses on the chassis (root link), just
+    # inboard of each wheel flange.
+    to_root = np.linalg.inv(W["root"])
+    pts = []
+    for jn in WHEEL_JOINTS:
+        p = W[joints[jn].find("child").get("link")][:3, 3].copy()
+        p[1] -= math.copysign(DRIVE_MOTOR_INBOARD, p[1])
+        pts.append((to_root @ np.append(p, 1))[:3])
+    pts = np.array(pts)
+    m_motors = DRIVE_MOTOR_MASS * len(pts)
+    com = pts.mean(0)
+    I = sum(DRIVE_MOTOR_MASS * ((r @ r) * np.eye(3) - np.outer(r, r)) for r in pts - com)
+    set_inertial(links["root"], m_motors, com, I + 1e-4 * np.eye(3))
+
+    for name, m in (("electronics", ELECTRONICS_MASS), ("bucket", BIN_MASS)):
+        c, size = mesh_box(name)
+        set_inertial(links[name], m, c, box_inertia(m, size))
+
+    # Wheels take the rest; scale each one's CAD mass and inertia.
+    wheel_links = [l for l in links if l in WHEELS]
+    others = sum(mass(n) for n in links if n not in wheel_links)
+    wheel_total = TOTAL_MASS - others
+    if wheel_total <= 0:
+        raise RuntimeError(f"Parts other than the wheels already weigh {others:.1f} kg > TOTAL_MASS")
+    for n in wheel_links:
+        inertial = links[n].find("inertial")
+        k = (wheel_total / len(wheel_links)) / mass(n)
+        inertial.find("mass").set("value", f"{mass(n) * k:.6g}")
+        el = inertial.find("inertia")
+        for a in ("ixx", "ixy", "ixz", "iyy", "iyz", "izz"):
+            el.set(a, f"{float(el.get(a)) * k:.6g}")
+    total = sum(mass(n) for n in links)
+    print(f"masses: total {total:.2f} kg (drive motors {m_motors:.2f}, electronics {ELECTRONICS_MASS}, "
+          f"bin {BIN_MASS}, wheels {wheel_total / len(wheel_links):.2f} kg each, rest from CAD)")
 
 
 def load_stl_vertices(path):

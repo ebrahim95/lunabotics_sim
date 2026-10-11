@@ -9,3 +9,6 @@ __pycache__/
 
 # MuJoCo test environment (uv venv)
 .venv-mujoco/
+
+# MuJoCo error log
+MUJOCO_LOG.TXT

@@ -32,6 +32,19 @@ Gazebo simulation rendered on the NVIDIA GPU (hybrid-graphics laptops):
 ros2 launch lunabotics_model gazebo.launch.py gpu:=true
 ```
 
+Gazebo simulation in the Lunabotics Artemis Arena (BP-1 regolith simulant,
+craters, rocks, column; the robot starts in the starting zone):
+
+```bash
+ros2 launch lunabotics_model gazebo.launch.py world:=artemis_arena
+```
+
+Start somewhere else in the arena (metres from the starting-zone corner, heading in radians):
+
+```bash
+ros2 launch lunabotics_model gazebo.launch.py world:=artemis_arena x:=1.5 y:=0.5 yaw:=0.3
+```
+
 RViz model viewer (no physics):
 
 ```bash
@@ -87,6 +100,25 @@ python3 scripts/fix_kinematics.py --input urdf/assembly_1.urdf --output urdf/ass
 python3 scripts/add_ros2_control.py --input urdf/assembly_1_fixed.urdf --output urdf/assembly_1_sim.urdf
 cd ~/Desktop/lunabotics_sim && colcon build --packages-select lunabotics_model
 ```
+
+## Change the robot's mass or motor limits
+
+Edit the constants at the top of `src/lunabotics_model/scripts/fix_kinematics.py`
+(`TOTAL_MASS`, `ELECTRONICS_MASS`, `BIN_MASS`, `DRIVE_MOTOR_MASS`,
+`WHEEL_EFFORT`, `WHEEL_VELOCITY`), then regenerate as in
+"Update the model from Onshape" above.
+
+## Change the Artemis Arena layout
+
+Random rocks and craters, as the judges place them (any seed number):
+
+```bash
+cd ~/Desktop/lunabotics_sim/src/lunabotics_model
+python3 scripts/generate_arena_world.py --output-dir worlds --seed 7
+cd ~/Desktop/lunabotics_sim && colcon build --packages-select lunabotics_model
+```
+
+Back to the guidebook layout: run the same command without `--seed`.
 
 ## MuJoCo bucket digging test
 
