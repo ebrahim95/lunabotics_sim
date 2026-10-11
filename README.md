@@ -3,6 +3,19 @@
 For how everything works, see [docs/GUIDE.md](docs/GUIDE.md); for what the
 simulation can and can't be trusted for, see its section 14.
 
+## Robot hardware
+
+| Component | Qty | Key specs |
+|---|---|---|
+| Drive gearmotor, StepperOnline 57BLR70-24-02-HG50 | 4 | 24 V, 50:1, 20 N·m continuous, 70 rpm |
+| Belt motor, TSINY TS-30GZ6287-R-LS | 1 | 12 V worm gear, 50 rpm, ~6 N·m |
+| Lift actuator, Progressive Automations PA-14-6-35 | 2 | 12 V, 6" stroke, 35 lb each, 2"/s |
+| Wheels | 4 | Ø361 mm × 100 mm |
+| Excavator buckets | 10 | on a 0.65 m belt between two Ø94 mm rollers |
+| Total mass | — | 50 kg |
+
+Full parts list: [docs/GUIDE.md section 16](docs/GUIDE.md#16-the-robots-parts).
+
 ## Install dependencies
 
 ```bash

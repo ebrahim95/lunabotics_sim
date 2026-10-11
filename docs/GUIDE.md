@@ -26,7 +26,8 @@ For the commands to build and run, see the [README](../README.md).
 13. [The MuJoCo digging test](#13-the-mujoco-digging-test)
 14. [How realistic is this simulation?](#14-how-realistic-is-this-simulation)
 15. [Gotchas we hit (and why)](#15-gotchas-we-hit-and-why)
-16. [Glossary](#16-glossary)
+16. [The robot's parts](#16-the-robots-parts)
+17. [Glossary](#17-glossary)
 
 ---
 
@@ -1156,7 +1157,60 @@ answered queries meant for the new one. If results look stale, check
 
 ---
 
-## 16. Glossary
+## 16. The robot's parts
+
+Every part of the rover, what it is, and how the simulation models it. The
+CAD link names are what you'll see in the URDF, RViz and Gazebo.
+
+### Bought-in components
+
+| Component | Qty | Specs | Where in the sim |
+|---|---|---|---|
+| **Drive gearmotor** — StepperOnline 57BLR70-24-02-HG50 | 4 | 24 V 172 W brushless DC + 50:1 planetary gearbox; rated 17.63 N·m at 70 rpm; gearbox 20 N·m continuous, 40 N·m momentary; 1.49 kg | in the CAD (parts P1–P6, merged into `root`); wheel joints `revolute_1*` limited to 20 N·m / 7.33 rad/s; 1.49 kg each on the chassis |
+| **Belt motor** — TSINY TS-30GZ6287-R-LS | 1 | 12 V worm-gear DC motor, 50 rpm version, ~6 N·m rated, 100 W (seller listings) | not in the CAD; `drive_roller_joint` limited to 6 N·m / 5.24 rad/s, assumed direct on the top roller |
+| **Lift actuator** — Progressive Automations PA-14-6-35 | 2 | 12 V linear actuator, 6" (152 mm) stroke, 35 lb (156 N), 2.00"/s no load, 1.38"/s full load | not in the CAD; one each side of the ladder, modelled as one joint `excavator_lift`: 311 N combined, 50.8 mm/s, −0.152 to 0 m |
+
+### Structure and mechanisms (from the CAD)
+
+| Part | CAD links | Qty | Size (mm) | Mass in sim | What it is |
+|---|---|---|---|---|---|
+| 30×30 extrusion, 467 mm | `30___30___1`, `30___30___2` | 2 | 467×30×30 | 0.35 kg each | chassis frame |
+| 30×30 extrusion, 403 mm | `30___30___403` … `_3` | 4 | 403×30×30 | 0.30 kg each | chassis frame |
+| 30×30 extrusion, 700 mm | `30___30___700`, `_700_1` | 2 | 700×30×30 | 0.52 kg each | chassis frame |
+| 30×60 extrusion, 400 mm | `30___60___400`, `_400_1` | 2 | 400×60×30 | 0.58 kg each | chassis frame |
+| 30×60 extrusion, 600 mm | `30___60___400_2`, `_3` | 2 | 600×60×30 | 0.88 kg each | inclined rails the ladder slides on |
+| 40×40 extrusion, 400 mm | `40___40___1`, `_1_1` | 2 | 400×40×40 | 0.70 kg each | chassis frame |
+| 40×40 extrusion, 407 mm | `40___40___407`, `_407_1` | 2 | 407×40×40 | 0.71 kg each | chassis frame |
+| Ladder side plates (30×30, 700 mm) | `30___30___403_4`, `_5` | 2 | 700×30×30 | 0.52 kg each | the excavator ladder's sides; move with the lift |
+| Slider brackets | `slider_bracket`, `_1` | 2 | 46×45×40 | 0.06 kg each | fixed to the rails; the ladder slides through them |
+| Drive motor parts | `root` + `57blr70_24_02_hg50_*` | 4 sets | Ø57 | 1.49 kg each (in `root`) | the drive gearmotors above |
+| Wheel flanges | `flange` … `flange_3` | 4 | 57×57×20 | — (inside the wheel) | hub adaptor; driven by `revolute_1*` |
+| Wheels | `wheel`, `wheel_1`, `wheel_mirrored`, `wheel_mirrored_1` | 4 | Ø361 × 100 | 5.19 kg each | drive wheels (two are mirror images) |
+| Rollers | `roller_1` (top), `roller` (bottom) | 2 | Ø94 × 260 | 2.29 kg each | belt rollers: top driven, bottom idler |
+| Roller shafts | `rod` (top), `rod_1` (bottom) | 2 | Ø15 × 265 | 0.13 kg each | axles the rollers turn on |
+| Belt | `belt` | 1 | 713×305×250 | 0.64 kg | the bucket belt (shape only; doesn't move) |
+| Excavator buckets | `bucket_1` … `bucket_10` | 10 | 205×89×79 | 0.15 kg each | hollow, 2.5 mm walls, open on the leading face |
+| Regolith bin | `bucket` | 1 | 400×300×192 | 1.5 kg (**assumed**) | V-shaped hopper, open top |
+| Electronics box | `electronics` | 1 | 180×157×135 | 5 kg (**assumed**, incl. battery) | electronics and battery |
+
+### Mass by subsystem (50 kg total, measured)
+
+| Subsystem | Mass | Source |
+|---|---|---|
+| Wheels | 20.7 kg | remainder of 50 kg |
+| Chassis frame (extrusions, brackets) | 8.8 kg | CAD |
+| Excavator ladder (side plates, shafts, rollers, belt, buckets) | 8.0 kg | CAD |
+| Drive gearmotors | 6.0 kg | datasheet |
+| Battery + electronics | 5.0 kg | **assumed** |
+| Regolith bin | 1.5 kg | **assumed** |
+
+The belt motor and lift actuators aren't separate parts in the model; their
+mass is inside the 50 kg total. Change the assumed masses with the
+constants at the top of `fix_kinematics.py`.
+
+---
+
+## 17. Glossary
 
 | Term | Meaning |
 |---|---|
