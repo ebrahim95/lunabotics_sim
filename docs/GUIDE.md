@@ -511,7 +511,41 @@ It also integrates wheel motion into an odometry estimate
 (`/diff_drive_controller/odom`). Because a four-wheel robot **skids**
 sideways when turning, `wheel_separation_multiplier: 2.1` makes it act as if
 the wheels were further apart, so turns come out close to what you asked for.
-Odometry rotation is still only approximate (~20% off).
+Odometry rotation is still only approximate (see below).
+
+### What is odometry?
+
+**Odometry** is the robot working out where it is by counting how much its
+wheels have turned — like walking with your eyes closed and counting steps.
+`diff_drive_controller` does it from the wheel encoders:
+
+- **Distance:** wheel turns × circumference; one turn = 2π × 0.1805 m ≈ 1.13 m.
+- **Forward movement:** the average of the left and right wheels.
+- **Turning:** the difference between them — if the right side travels
+  further than the left, the robot turned left.
+
+It adds up these small movements 100 times a second into a running
+estimate of position (x, y) and heading, published on
+`/diff_drive_controller/odom` and as the `odom → base_link` transform (where
+the robot *thinks* it is relative to where it started; RViz uses it). Try
+`ros2 run tf2_ros tf2_echo odom base_link`.
+
+**Its weakness is drift.** It measures wheel turns, not real movement, so
+anything that turns the wheels without moving the robot fools it: wheel
+slip in sand, sideways sliding when a skid-steer robot turns, bumps and
+craters. The errors add up and never correct themselves. From the sim tests:
+
+| Test | Real (Gazebo) | Odometry said |
+|---|---|---|
+| Drive forward | 1.488 m | 1.437 m (3% off) |
+| Turn in place, before wheel slip | 0.01 rad (stuck) | 1.11 rad (very wrong) |
+| Turn in place, with wheel slip | 1.95 rad | 1.83 rad (6% off) |
+
+Straight driving is fairly accurate; turning is the weak point, as is
+typical for skid-steer robots. That's why autonomous Lunabotics robots
+combine odometry with sensors that see the world — cameras with fiducial
+markers, lidar, an IMU for heading — to correct the drift (the rules allow
+beacons and fiducials on the arena frame for this).
 
 ---
 
