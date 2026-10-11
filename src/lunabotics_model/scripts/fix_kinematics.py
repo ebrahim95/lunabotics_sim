@@ -107,6 +107,9 @@ COLLISION_SHAPES = {
     # The belt band is static in the sim (only the buckets travel), so a
     # solid belt would drag on regolith the real moving belt wouldn't.
     "belt.stl": None,
+    # Hidden inside the wheel hub, and Gazebo's WheelSlip needs each wheel
+    # link (wheel merged into its flange) to have exactly one collision.
+    "flange.stl": None,
 }
 
 # Dummy links Onshape adds for closed loops / cylindrical mates. They have

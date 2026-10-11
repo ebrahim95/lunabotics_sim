@@ -22,7 +22,14 @@ import xml.etree.ElementTree as ET
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from fix_kinematics import loop_pose  # noqa: E402
+from fix_kinematics import TOTAL_MASS, loop_pose  # noqa: E402
+
+# Wheel slip on loose regolith (Gazebo WheelSlip system). Steady-state slip
+# ~= compliance * (traction force / wheel load). ESTIMATE for BP-1-like loose
+# sand: ~20% slip while pushing at ~0.3x the wheel load -> ~0.6. No measured
+# value for these wheels on BP-1; tune against traction tests if you have them.
+SLIP_COMPLIANCE_LONGITUDINAL = 0.6
+SLIP_COMPLIANCE_LATERAL = 0.6
 
 WHEEL_JOINTS = ["revolute_1", "revolute_1_1", "revolute_1_2", "revolute_1_3"]
 
@@ -59,6 +66,9 @@ ROS2_CONTROL_BLOCK = """
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>$(find lunabotics_model)/config/controllers.yaml</parameters>
         </plugin>
+        <plugin filename="gz-sim-wheel-slip-system" name="gz::sim::systems::WheelSlip">
+{wheel_slip}
+        </plugin>
     </gazebo>
 """
 
@@ -78,8 +88,25 @@ def joint_xml(name, command="velocity", initial=None):
     return "\n".join(lines)
 
 
-def build_block(belt_joints, belt_start):
+def wheel_slip_xml(urdf_text):
+    """One <wheel> per drive wheel. Gazebo merges each wheel into the flange
+    its joint drives, so the flange is the link that touches the ground."""
+    robot = ET.fromstring(urdf_text)
+    flanges = [robot.find(f"joint[@name='{j}']").find("child").get("link") for j in WHEEL_JOINTS]
+    radius = float(robot.find("link[@name='wheel']").find("collision/geometry/cylinder").get("radius"))
+    load = TOTAL_MASS * 9.81 / len(flanges)
+    return "\n".join(
+        f'            <wheel link_name="{f}">\n'
+        f'                <slip_compliance_longitudinal>{SLIP_COMPLIANCE_LONGITUDINAL}</slip_compliance_longitudinal>\n'
+        f'                <slip_compliance_lateral>{SLIP_COMPLIANCE_LATERAL}</slip_compliance_lateral>\n'
+        f'                <wheel_normal_force>{load:.1f}</wheel_normal_force>\n'
+        f'                <wheel_radius>{radius:.4f}</wheel_radius>\n'
+        f'            </wheel>' for f in flanges)
+
+
+def build_block(belt_joints, belt_start, wheel_slip):
     return ROS2_CONTROL_BLOCK.format(
+        wheel_slip=wheel_slip,
         wheel_joints="\n".join(joint_xml(j) for j in WHEEL_JOINTS),
         excavator_joints="\n".join(joint_xml(j, c) for j, c in EXCAVATOR_JOINTS),
         belt_joints="\n".join(
@@ -125,7 +152,7 @@ def patch(input_path, output_path, belt_config):
     if missing:
         raise ValueError(f"{belt_config} has no start position for {sorted(missing)} -- "
                          "re-run fix_kinematics.py")
-    block = build_block(belt_joints, belt_start)
+    block = build_block(belt_joints, belt_start, wheel_slip_xml(content))
 
     # Insert right before the closing </robot> tag
     if "</robot>" not in content:
@@ -140,6 +167,8 @@ def patch(input_path, output_path, belt_config):
     print(f"Added ros2_control interfaces for wheel joints: {WHEEL_JOINTS}")
     print(f"Added ros2_control interfaces for excavator joints: {EXCAVATOR_JOINTS}")
     print(f"Added position interfaces for {len(belt_joints)} bucket track joints")
+    print(f"Added wheel slip (compliance {SLIP_COMPLIANCE_LONGITUDINAL} long., "
+          f"{SLIP_COMPLIANCE_LATERAL} lat.) on the 4 drive wheels")
 
 
 def main():

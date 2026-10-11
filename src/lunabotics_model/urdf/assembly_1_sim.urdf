@@ -809,12 +809,6 @@
                 <color rgba="0.647059 0.647059 0.647059 1" />
             </material>
         </visual>
-        <collision name="flange_collision_0">
-            <origin xyz="-1.6681e-18 0.0100000039 -1.0842e-17" rpy="0 -0 0" />
-            <geometry>
-                <box size="0.0568000004 0.0199999958 0.0568000004" />
-            </geometry>
-        </collision>
     </link>
     <link name="flange_1">
         <inertial>
@@ -831,12 +825,6 @@
                 <color rgba="0.647059 0.647059 0.647059 1" />
             </material>
         </visual>
-        <collision name="flange_1_collision_0">
-            <origin xyz="-1.6681e-18 0.0100000039 -1.0842e-17" rpy="0 -0 0" />
-            <geometry>
-                <box size="0.0568000004 0.0199999958 0.0568000004" />
-            </geometry>
-        </collision>
     </link>
     <link name="flange_2">
         <inertial>
@@ -853,12 +841,6 @@
                 <color rgba="0.647059 0.647059 0.647059 1" />
             </material>
         </visual>
-        <collision name="flange_2_collision_0">
-            <origin xyz="-1.6681e-18 0.0100000039 -1.0842e-17" rpy="0 -0 0" />
-            <geometry>
-                <box size="0.0568000004 0.0199999958 0.0568000004" />
-            </geometry>
-        </collision>
     </link>
     <link name="flange_3">
         <inertial>
@@ -875,12 +857,6 @@
                 <color rgba="0.647059 0.647059 0.647059 1" />
             </material>
         </visual>
-        <collision name="flange_3_collision_0">
-            <origin xyz="-1.6681e-18 0.0100000039 -1.0842e-17" rpy="0 -0 0" />
-            <geometry>
-                <box size="0.0568000004 0.0199999958 0.0568000004" />
-            </geometry>
-        </collision>
     </link>
     <link name="rod">
         <inertial>
@@ -2308,6 +2284,32 @@
     <gazebo>
         <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
             <parameters>$(find lunabotics_model)/config/controllers.yaml</parameters>
+        </plugin>
+        <plugin filename="gz-sim-wheel-slip-system" name="gz::sim::systems::WheelSlip">
+            <wheel link_name="flange_3">
+                <slip_compliance_longitudinal>0.6</slip_compliance_longitudinal>
+                <slip_compliance_lateral>0.6</slip_compliance_lateral>
+                <wheel_normal_force>122.6</wheel_normal_force>
+                <wheel_radius>0.1805</wheel_radius>
+            </wheel>
+            <wheel link_name="flange_2">
+                <slip_compliance_longitudinal>0.6</slip_compliance_longitudinal>
+                <slip_compliance_lateral>0.6</slip_compliance_lateral>
+                <wheel_normal_force>122.6</wheel_normal_force>
+                <wheel_radius>0.1805</wheel_radius>
+            </wheel>
+            <wheel link_name="flange">
+                <slip_compliance_longitudinal>0.6</slip_compliance_longitudinal>
+                <slip_compliance_lateral>0.6</slip_compliance_lateral>
+                <wheel_normal_force>122.6</wheel_normal_force>
+                <wheel_radius>0.1805</wheel_radius>
+            </wheel>
+            <wheel link_name="flange_1">
+                <slip_compliance_longitudinal>0.6</slip_compliance_longitudinal>
+                <slip_compliance_lateral>0.6</slip_compliance_lateral>
+                <wheel_normal_force>122.6</wheel_normal_force>
+                <wheel_radius>0.1805</wheel_radius>
+            </wheel>
         </plugin>
     </gazebo>
 

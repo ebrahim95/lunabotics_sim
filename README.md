@@ -101,12 +101,16 @@ python3 scripts/add_ros2_control.py --input urdf/assembly_1_fixed.urdf --output 
 cd ~/Desktop/lunabotics_sim && colcon build --packages-select lunabotics_model
 ```
 
-## Change the robot's mass or motor limits
+## Change the robot's mass, motor limits or wheel slip
 
 Edit the constants at the top of `src/lunabotics_model/scripts/fix_kinematics.py`
 (`TOTAL_MASS`, `ELECTRONICS_MASS`, `BIN_MASS`, `DRIVE_MOTOR_MASS`,
 `WHEEL_EFFORT`, `WHEEL_VELOCITY`), then regenerate as in
 "Update the model from Onshape" above.
+
+Wheel slip on the regolith: edit `SLIP_COMPLIANCE_LONGITUDINAL` and
+`SLIP_COMPLIANCE_LATERAL` at the top of
+`src/lunabotics_model/scripts/add_ros2_control.py`, then regenerate the same way.
 
 ## Change the Artemis Arena layout
 

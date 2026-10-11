@@ -326,7 +326,36 @@ cohesion; the arena holds ~45 cm of it. Gazebo can't simulate it as a
 granular soil (that's what the MuJoCo test is for), so the floor is a
 rigid terrain mesh with BP-1's properties as a surface: friction 0.8
 (≈ tan 39°), dark basalt colour, ~5 mm gravel roughness, and crater
-depressions. Wheels don't sink or slip the way they would in real BP-1.
+depressions. Wheels don't sink into it the way they would in real BP-1, but
+they do slip (see "Wheel slip" below).
+
+### Wheel slip
+
+`add_ros2_control.py` adds Gazebo's **WheelSlip** system to the four drive
+wheels. It lets a wheel turn faster than the ground passes under it when
+it pushes hard, as on loose sand. Roughly:
+
+```
+slip ≈ compliance × (traction force ÷ wheel load)
+```
+
+The compliance is **0.6** forward and sideways — an **estimate** for loose
+sand (~20% slip while pushing at ~0.3× the wheel load); there's no measured
+value for these wheels on BP-1. The wheel load is 50 kg × 9.81 ÷ 4 = 123 N.
+In the arena this gives:
+
+| Situation | Slip |
+|---|---|
+| Starting from rest at full speed | ~80% at first, falling to ~4% after 1 s |
+| Cruising at 1 m/s | ~2.5% |
+| Spinning in place | the wheels scrub sideways, so the robot can pivot |
+
+Without slip, the 20 N·m motors couldn't drag the wheels sideways on the
+high-friction floor and the robot barely turned on the spot. WheelSlip
+needs each wheel link to have exactly one collision, which is why the
+flange (hidden inside the hub) has none. Change the values with
+`SLIP_COMPLIANCE_LONGITUDINAL` / `SLIP_COMPLIANCE_LATERAL` at the top of
+`add_ros2_control.py`.
 
 The default layout is the guidebook drawing's example; `--seed N` places
 rocks and craters randomly in their zones, like the judges do each run.
@@ -585,6 +614,7 @@ simple collision shape, chosen by the `COLLISION_SHAPES` table:
 |---|---|
 | Frame extrusions, brackets, motors, electronics | box fitted to the mesh |
 | Wheels, rollers, shafts | cylinder |
+| Wheel flanges | none (hidden in the hub; WheelSlip needs one collision per wheel) |
 | Buckets, regolith bin | the mesh itself (they're low-poly) |
 | Belt band | none |
 
@@ -607,7 +637,10 @@ materials on most parts (motors weighed micrograms, each wheel 9 kg), so
 | Wheels | 5.19 kg each | whatever is left of 50 kg |
 
 The wheel joints get the gearmotor's limits: **20 N·m** (gearbox continuous
-limit; 40 N·m momentary) and **7.33 rad/s** (70 rpm rated). Edit the
+limit; 40 N·m momentary) and **7.33 rad/s** (70 rpm rated). With the 50 kg
+mass, that's realistic for a skid-steer robot: the wheels stall against a
+wall instead of spinning forever, and pivoting on the spot needs wheel slip
+(below) to work at all. Edit the
 constants at the top of `fix_kinematics.py` if you know better masses.
 
 ### The result
@@ -909,6 +942,10 @@ looked crooked. `fix_kinematics.py` now adds a proper `base_link`.
 **The MuJoCo viewer breaks with the NVIDIA offload variables** (`OpenGL
 error 0x502`) on this Wayland desktop. Run it without them; physics is on
 the CPU anyway.
+
+**Measure speeds in sim time.** The arena sim runs at ~0.6× real time; a
+test that timed the robot with the wall clock saw a fake "45% wheel slip".
+Use the timestamps Gazebo and ROS (`use_sim_time`) provide.
 
 **Old Gazebo servers kept running in the background** after tests and
 answered queries meant for the new one. If results look stale, check
