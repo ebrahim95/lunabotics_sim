@@ -767,7 +767,7 @@ named constants at its top; regenerate as in the README):
 |---|---|---|---|
 | Wheel motors (×4), `revolute_1*` | **20 N·m** (`WHEEL_EFFORT`) | **7.33 rad/s = 70 rpm** (`WHEEL_VELOCITY`), ≈ 1.3 m/s | 57BLR70-24-02-HG50 datasheet: rated 17.63 N·m at 70 rpm, gearbox 20 N·m continuous / 40 N·m momentary |
 | Drive roller (belt), `drive_roller_joint` | **6 N·m** (`ROLLER_EFFORT`) | **5.24 rad/s = 50 rpm** (`ROLLER_VELOCITY`), ≈ 0.25 m/s belt | TSINY TS-30GZ6287-R-LS 12 V worm-gear motor, 50 rpm version (~6 N·m rated, seller listings); assumed direct on the roller |
-| Excavator lift, `excavator_lift` | **156 N = 35 lb** (`LIFT_EFFORT`) | **0.0508 m/s = 2"/s** (`LIFT_VELOCITY`); travel **−0.152 to 0 m** (6" stroke down from the CAD pose) | Progressive Automations PA-14-6-35 (12 V; 1.38"/s at full load); assumed pushing straight along the rails, CAD pose = retracted |
+| Excavator lift, `excavator_lift` | **311 N = 2 × 35 lb** (`LIFT_EFFORT`) | **0.0508 m/s = 2"/s** (`LIFT_VELOCITY`); travel **−0.152 to 0 m** (6" stroke down from the CAD pose) | **two** Progressive Automations PA-14-6-35, one each side, driven together (12 V; 35 lb each; 1.38"/s at full load); assumed pushing straight along the rails, CAD pose = retracted |
 | Bucket track joints (×30) | 200 N / N·m (`BUCKET_EFFORT`) | 5 m/s / rad/s (`BUCKET_VELOCITY`) | simulation only (moves the buckets round the belt) |
 | Drive controller | — | 1.0 m/s forward, 2.0 rad/s turning | `linear.x.max_velocity`, `angular.z.max_velocity` in `config/controllers.yaml` |
 
@@ -781,7 +781,8 @@ the robot tops out near 1.3 m/s (the drive controller caps it at 1.0 m/s). The b
 buckets lag their target by ~17 mm at 3 rad/s and ~29 mm at full speed,
 settling when the belt stops. The lift lowers or raises its full
 6" stroke in ~3 s (50 mm/s) and easily holds the 8 kg ladder, whose weight
-puts ~64 N along the rails against the actuator's 156 N.
+puts ~64 N along the rails against the two actuators' combined 311 N
+(each alone, 156 N, could still hold it).
 
 ### The result
 
@@ -1057,7 +1058,7 @@ not a faithful copy of the robot in BP-1.
 | Mass distribution | battery, electronics and bin masses are assumed; wheels take the remainder (affects tipping, braking, wheel loads) |
 | Wheel slip (0.6) | estimated for loose sand, not measured on these wheels in BP-1 |
 | Ground friction (0.8) | from BP-1's internal friction angle; real wheel traction can be lower |
-| Excavator actuators | belt motor is the TSINY TS-30GZ6287 (6 N·m, 50 rpm) from seller listings, assumed direct on the roller; the lift is the PA-14-6-35 actuator (156 N, 50.8 mm/s, 6" stroke), assumed to push along the rails from the CAD pose. The buckets don't load the belt motor, so it never stalls |
+| Excavator actuators | belt motor is the TSINY TS-30GZ6287 (6 N·m, 50 rpm) from seller listings, assumed direct on the roller; the lift is two PA-14-6-35 actuators, one each side (311 N combined, 50.8 mm/s, 6" stroke), assumed to stay in sync and to push straight along the rails from the CAD pose. The buckets don't load the belt motor, so it never stalls |
 
 ### Not modelled
 

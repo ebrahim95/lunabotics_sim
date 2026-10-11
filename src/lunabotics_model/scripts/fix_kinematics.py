@@ -60,14 +60,17 @@ from collections import deque
 import numpy as np
 
 # ---- Tune these to match the real hardware ------------------------------
-# Excavator lift: Progressive Automations PA-14-6-35 linear actuator, 12 V,
-# 6" stroke, 35 lb force, 2.00"/s no load (1.38"/s full load); assumed to
-# push straight along the ladder rails. The CAD pose (buckets just clear of
+# Excavator lift: two Progressive Automations PA-14-6-35 linear actuators,
+# one each side of the ladder, driven together. Each: 12 V, 6" stroke,
+# 35 lb force, 2.00"/s no load (1.38"/s full load); assumed to push
+# straight along the ladder rails. Modelled as one joint with their
+# combined force. The CAD pose (buckets just clear of
 # the ground) is taken as fully retracted, so the stroke lowers the ladder.
 # Positive = ladder slides up the rails (away from the ground).
 LIFT_LOWER = -6 * 0.0254         # m, full 6" stroke down from the CAD pose
 LIFT_UPPER = 0.0                 # m, retracted (CAD pose)
-LIFT_EFFORT = 35 * 4.448222      # N (35 lb)
+LIFT_ACTUATORS = 2
+LIFT_EFFORT = LIFT_ACTUATORS * 35 * 4.448222   # N (2 x 35 lb)
 LIFT_VELOCITY = 2.0 * 0.0254     # m/s (2.00"/s, no load)
 # Belt drive: TSINY TS-30GZ6287-R-LS 12 V worm-gear motor, 50 rpm version,
 # ~6 N*m rated (seller listings), assumed direct on the drive roller (1:1).
