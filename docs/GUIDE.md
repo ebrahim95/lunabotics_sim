@@ -24,8 +24,9 @@ For the commands to build and run, see the [README](../README.md).
 11. [What happens when you press a key](#11-what-happens-when-you-press-a-key)
 12. [Debugging toolbox](#12-debugging-toolbox)
 13. [The MuJoCo digging test](#13-the-mujoco-digging-test)
-14. [Gotchas we hit (and why)](#14-gotchas-we-hit-and-why)
-15. [Glossary](#15-glossary)
+14. [How realistic is this simulation?](#14-how-realistic-is-this-simulation)
+15. [Gotchas we hit (and why)](#15-gotchas-we-hit-and-why)
+16. [Glossary](#16-glossary)
 
 ---
 
@@ -895,7 +896,64 @@ capacity test, not a soil-mechanics model.
 
 ---
 
-## 14. Gotchas we hit (and why)
+## 14. How realistic is this simulation?
+
+Realistic enough to develop software against and to compare designs, but
+not a faithful copy of the robot in BP-1.
+
+### Reasonably realistic
+
+| Aspect | Why it's believable |
+|---|---|
+| Robot geometry | straight from the CAD, every part in its true place |
+| Arena | official dimensions, zones, crater and rock sizes, column |
+| Drive motors | datasheet limits (20 N·m, 70 rpm): wheels stall against walls, pivoting needs slip |
+| Total mass | the measured 50 kg |
+| Driving | gradual spin-up with wheel slip, skid-steer turning, pitching over crater rims |
+
+### Estimated
+
+| Aspect | What's uncertain |
+|---|---|
+| Mass distribution | battery, electronics and bin masses are assumed; wheels take the remainder (affects tipping, braking, wheel loads) |
+| Wheel slip (0.6) | estimated for loose sand, not measured on these wheels in BP-1 |
+| Ground friction (0.8) | from BP-1's internal friction angle; real wheel traction can be lower |
+| Excavator actuators | belt motor (50 N·m) and lift (500 N, ±15 cm) are placeholders |
+
+### Not modelled
+
+1. **Rigid ground.** Real BP-1 is 45 cm of loose material: wheels sink,
+   bulldoze and lose traction climbing out of craters. This is the biggest
+   gap.
+2. **No digging in Gazebo.** Buckets scrape a hard floor. The MuJoCo test
+   digs, but with 2.4 cm pebbles (real grains are fractions of a mm) and
+   buckets that never stall.
+3. **Ideal electronics:** no battery drain or voltage sag, no motor heating,
+   no control lag, no sensor noise, perfect wheel encoders.
+4. **No dust.**
+
+### What to trust it for
+
+- **Good for:** teleop and autonomy software, navigation and path planning
+  around the arena's rocks and craters, controller and ROS integration,
+  and *relative* design comparisons (bucket A vs bucket B).
+- **Not good for:** absolute numbers — how fast the robot crosses BP-1,
+  whether it climbs out of a particular crater, regolith collected per
+  minute, or whether a motor is strong enough to dig.
+
+### Making it more realistic
+
+1. Measure the real masses (battery, electronics, bin, wheels) and the
+   excavator motor specs — easy, and removes most of the guesses.
+2. Drive the real robot on BP-1 (or similar sand), measure slip and pulling
+   force, and tune the slip and friction values to match.
+3. For sinkage and digging forces, use a terrain model built for loose soil
+   (e.g. Project Chrono's soil models or a terramechanics plugin) — a much
+   bigger step.
+
+---
+
+## 15. Gotchas we hit (and why)
 
 **Gazebo segfaulted on start-up in `libgz_ros2_control-system.so`.**
 `gz_ros2_control` had been built against a newer `ros2_control` than the one
@@ -953,7 +1011,7 @@ answered queries meant for the new one. If results look stale, check
 
 ---
 
-## 15. Glossary
+## 16. Glossary
 
 | Term | Meaning |
 |---|---|

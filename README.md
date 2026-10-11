@@ -1,6 +1,7 @@
 # lunabotics_sim
 
-For how everything works, see [docs/GUIDE.md](docs/GUIDE.md).
+For how everything works, see [docs/GUIDE.md](docs/GUIDE.md); for what the
+simulation can and can't be trusted for, see its section 14.
 
 ## Install dependencies
 
