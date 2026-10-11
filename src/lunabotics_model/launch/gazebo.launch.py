@@ -76,9 +76,9 @@ def generate_launch_description():
     spawn_robot = Node(
         package="ros_gz_sim",
         executable="create",
-        # Wheels are the lowest point, 0.308 m below the model origin; drop
-        # the robot from just above that so it lands on them.
-        arguments=["-topic", "robot_description", "-name", "lunabotics", "-z", "0.32"],
+        # base_link sits on the ground under the wheels; drop the robot from
+        # just above it so it lands on them.
+        arguments=["-topic", "robot_description", "-name", "lunabotics", "-z", "0.01"],
         output="screen",
     )
 

@@ -6,3 +6,6 @@ log/
 # Python
 __pycache__/
 *.pyc
+
+# MuJoCo test environment (uv venv)
+.venv-mujoco/

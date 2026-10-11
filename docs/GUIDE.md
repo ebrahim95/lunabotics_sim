@@ -23,8 +23,9 @@ For the commands to build and run, see the [README](../README.md).
 10. [What happens when you launch](#10-what-happens-when-you-launch)
 11. [What happens when you press a key](#11-what-happens-when-you-press-a-key)
 12. [Debugging toolbox](#12-debugging-toolbox)
-13. [Gotchas we hit (and why)](#13-gotchas-we-hit-and-why)
-14. [Glossary](#14-glossary)
+13. [The MuJoCo digging test](#13-the-mujoco-digging-test)
+14. [Gotchas we hit (and why)](#14-gotchas-we-hit-and-why)
+15. [Glossary](#15-glossary)
 
 ---
 
@@ -78,6 +79,9 @@ At runtime:
                ▼                                                     ▼
    /bucket_position_controller/commands                         RViz display
 ```
+
+Separately from ROS, `mujoco_dig/dig_test.py` uses the **MuJoCo** physics
+engine to test how well the buckets dig regolith (section 13).
 
 You don't need to understand all of that yet — each piece is explained below.
 
@@ -175,10 +179,10 @@ A robot is a tree of coordinate frames: one per part. **TF** is the ROS
 system that tracks where every frame is relative to every other, over time.
 `robot_state_publisher` reads the URDF and the current joint angles from
 `/joint_states`, and publishes a transform for every part. RViz uses TF to
-draw the robot. `diff_drive_controller` adds one more: `odom → root`, the
+draw the robot. `diff_drive_controller` adds one more: `odom → base_link`, the
 robot's estimated position in the world.
 
-Try: `ros2 run tf2_ros tf2_echo odom root`.
+Try: `ros2 run tf2_ros tf2_echo odom base_link`.
 
 ### Sim time
 
@@ -432,7 +436,10 @@ Odometry rotation is still only approximate (~20% off).
 lunabotics_sim/
 ├── README.md                     how to install, build, run, control
 ├── docs/GUIDE.md                 this file
-├── .gitignore                    ignores build/, install/, log/
+├── .gitignore                    ignores build/, install/, log/, .venv-mujoco/
+├── .venv-mujoco/                 Python environment for the MuJoCo test (not in git)
+├── mujoco_dig/
+│   └── dig_test.py               MuJoCo bucket digging test (section 13)
 ├── old_urdf/                     first Onshape export (chassis only, ROS 1) — unused
 └── src/lunabotics_model/         the ROS 2 package
     ├── package.xml               package name and dependencies
@@ -474,7 +481,8 @@ change the script and re-run it.
 | `config/bucket_controller.yaml` | generated | — | used by `gazebo.launch.py` (bucket spawner) |
 | `launch/gazebo.launch.py` | source | `assembly_1_sim.urdf`, all three configs | starts Gazebo, controllers, `belt_animator`, RViz |
 | `launch/display.launch.py` | source | `assembly_1_fixed.urdf`, `belt_animator.yaml` | starts RViz, joint sliders, `belt_animator` |
-| `meshes/*.stl` | CAD input | — | read by `fix_kinematics.py`; drawn by RViz and Gazebo |
+| `meshes/*.stl` | CAD input | — | read by `fix_kinematics.py`; drawn by RViz, Gazebo and MuJoCo |
+| `mujoco_dig/dig_test.py` | source | `assembly_1_fixed.urdf`, `belt_animator.yaml`, `meshes/*.stl` | builds and runs the MuJoCo digging scene |
 
 Only edit the **source** files. Re-run the two scripts after changing them
 or after a new Onshape export (see the README).
@@ -494,6 +502,7 @@ or after a new Onshape export (see the README).
 | `<mimic>` tags coupling the wheels | Conflict with independent control |
 | Buckets fixed rigidly to the belt | Gazebo merges them, so they can never move |
 | No `<collision>` anywhere | The robot falls through the floor |
+| The tree is rooted at a motor part sitting 5° off the chassis | The robot's frame isn't square to the robot, so "forward" drifts sideways |
 
 ### How it fixes them
 
@@ -546,10 +555,17 @@ simple collision shape, chosen by the `COLLISION_SHAPES` table:
 | Buckets, regolith bin | the mesh itself (they're low-poly) |
 | Belt band | none |
 
+**Step 8 — base frame.** `add_base_frame()` adds `base_link` as the new root
+of the tree: x forward (toward the excavator, perpendicular to the wheel
+axles), y left, z up, origin on the ground centred between the wheels — the
+usual ROS convention. `root` hangs off it on a fixed joint, so no part moves
+relative to any other; the whole robot is just re-squared by 5°.
+
 ### The result
 
 ```
-root
+base_link   (x forward, y left, z up; on the ground between the wheels)
+ └─ root
  ├─ motors ─► revolute_1* (continuous) ─► flange ─► wheel           (×4)
  └─ chassis frame ... slider_bracket
       └─ excavator_lift (prismatic) ─► ladder (side plates, shafts, belt)
@@ -652,7 +668,7 @@ Output: `assembly_1_sim.urdf`.
 | 0 s | Start Gazebo with `empty.sdf` |
 | 0 s | Start `robot_state_publisher` with the URDF → publishes `/robot_description` and TF |
 | 0 s | Start the `/clock` bridge so ROS nodes can use sim time |
-| 0 s | `ros_gz_sim create` reads `/robot_description` and spawns the robot at z = 0.32 m (wheels are 0.308 m below its origin) |
+| 0 s | `ros_gz_sim create` reads `/robot_description` and spawns the robot 1 cm above the ground (`base_link` sits on the ground under the wheels) |
 | ~1 s | Gazebo converts URDF→SDF, merges fixed joints, loads the ros2_control plugin, which starts `controller_manager` and the 3 hardware groups |
 | 5 s | Spawner 1 activates `joint_state_broadcaster`, `diff_drive_controller`, `belt_velocity_controller`, `excavator_lift_controller` (passing `controllers.yaml`, and remapping the drive controller's input to `/cmd_vel`) |
 | 5 s | Spawner 2 activates `bucket_position_controller` (passing `bucket_controller.yaml`) |
@@ -685,7 +701,7 @@ You press `i` in the teleop terminal:
    robot.
 5. Every cycle, `GazeboSimSystem` reads joint positions/velocities back;
    `joint_state_broadcaster` publishes them on `/joint_states`;
-   `diff_drive_controller` updates odometry and the `odom → root` transform.
+   `diff_drive_controller` updates odometry and the `odom → base_link` transform.
 6. The robot keeps moving with the last command until you press `k`
    (`cmd_vel_timeout` is set very long, because teleop sends only one
    message per key press).
@@ -709,7 +725,7 @@ controller sets the drive roller's velocity → the roller turns →
 | Are the controllers running? | `ros2 control list_controllers` |
 | Which joint interfaces exist? | `ros2 control list_hardware_interfaces` |
 | A node's parameters | `ros2 param list /diff_drive_controller` |
-| Where is the robot (estimate)? | `ros2 run tf2_ros tf2_echo odom root` |
+| Where is the robot (estimate)? | `ros2 run tf2_ros tf2_echo odom base_link` |
 | Where is the robot (truth)? | `gz model -m lunabotics -p` |
 | Is the sim running at full speed? | `gz topic -e -t /stats -n 1` → `real_time_factor` |
 | Is Gazebo using the GPU? | `nvidia-smi` → look for `gz-sim-gui-client` |
@@ -718,7 +734,86 @@ controller sets the drive roller's velocity → the roller turns →
 
 ---
 
-## 13. Gotchas we hit (and why)
+## 13. The MuJoCo digging test
+
+`mujoco_dig/dig_test.py` answers one question: **how much regolith do the
+buckets scoop and deliver to the bin?** It runs outside ROS, in the
+**MuJoCo** physics engine, which handles piles of touching particles far
+faster than Gazebo (Gazebo slowed below 1% of real time with a few hundred
+particles).
+
+### What is in the scene
+
+Everything is built from the repaired URDF, so it matches the Gazebo robot:
+
+| Part | How it is modelled |
+|---|---|
+| Whole robot | every CAD mesh, display only (no collisions, no mass) |
+| Buckets (10) | the CAD bucket, moving round the belt loop with `loop_pose()` |
+| Rollers | cylinders on the shafts |
+| Bin | the CAD V-shaped hopper |
+| Regolith | ~480 spheres, 2.4 cm, in a 10 cm deep pit in front of the ladder |
+| Ground | a surface at z = 0 with the pit cut out of it |
+
+The robot's frame is `base_link` (x forward, z up, origin on the ground),
+so the pit is defined relative to the ladder's bottom shaft and lines up
+with the robot.
+
+### Hollow CAD parts and convex hulls
+
+MuJoCo collides with the **convex hull** of a mesh — imagine shrink-wrapping
+it. A hollow bucket would become a solid lump that can hold nothing. So the
+script splits each hollow CAD part into its walls: in the STL every wall has
+an outer face and a parallel inner face 2.5 mm (bucket) or 10 mm (bin) away,
+and each such pair becomes one convex slab. The bucket comes out as 6 walls
+(base, back, sloped wall, lid, two end plates) with its **only opening on the
+leading face**; the bin as 4 walls (a V with two end walls), open on top.
+Change the bucket in Onshape, re-export, and the test uses the new shape.
+
+### How things move
+
+- **Mocap bodies.** The chassis, the ladder and every bucket are MuJoCo
+  *mocap* bodies: the script sets their position each step and they push
+  anything in their way, but nothing pushes them back. So the buckets never
+  stall, and the robot never tips — this tests what the buckets *carry*, not
+  digging forces.
+- **Rolling friction.** The spheres have rolling resistance (`condim="6"`),
+  which Gazebo doesn't support, so a pile stays a pile.
+- **Sequence.** The pile settles for 1 s with the ladder raised
+  (`--start-lift`), then the belt starts, the ladder lowers into the bed at
+  `--plunge` m/s down to `--lift`, and the robot creeps forward at
+  `--advance` m/s to keep feeding the buckets.
+- **Dig direction.** Buckets go down the underside of the ladder, scoop
+  forward round the bottom shaft, climb the top face, and tip over the top
+  shaft into the bin.
+
+### What it reports
+
+Every 2 s it prints how many particles are **in the bin** (inside the bin's
+box, moving with the robot) and **lifted** (above the bed, not in the bin —
+i.e. riding the buckets).
+
+### What we found
+
+| Change | Effect |
+|---|---|
+| Lowering the ladder from −0.03 to −0.12 m | yield went up several times |
+| Creeping forward faster than ~5 mm/s | worse: the robot overruns material |
+| Open scoop → your CAD bucket (with a lid) | ~93–110 in the bin vs 87; up to ~110 riding at once |
+| Starting the ladder overlapping the pile | particles explode outward — always start clear and lower in |
+
+Particle piles are chaotic, so expect about ±15% between runs; compare
+designs over a few runs. It runs at about 0.15–0.2× real time.
+
+### Limits
+
+Buckets and robot follow scripted paths (no stalling, no tipping, wheels
+don't spin); 2.4 cm spheres are far coarser than real regolith; this is a
+capacity test, not a soil-mechanics model.
+
+---
+
+## 14. Gotchas we hit (and why)
 
 **Gazebo segfaulted on start-up in `libgz_ros2_control-system.so`.**
 `gz_ros2_control` had been built against a newer `ros2_control` than the one
@@ -750,17 +845,35 @@ removed from ros2_controllers in Lyrical; `ForwardCommandController` with
 laptop has an AMD iGPU and an NVIDIA MX350 in PRIME on-demand mode; apps use
 the AMD chip unless told otherwise. `gpu:=true` tells Gazebo to use NVIDIA.
 
-**Particles for digging were too slow.** A test with a pile of a few hundred
-particles slowed DART to under 1% real time, and spheres rolled away (Gazebo
-has no rolling resistance). Digging simulation is not part of the repo yet.
+**Particles for digging were too slow in Gazebo.** A pile of a few hundred
+particles slowed DART to under 1% real time, and spheres rolled away
+(Gazebo has no rolling resistance). That's why the digging test uses MuJoCo.
+
+**A MuJoCo pile of particles exploded.** Particles that start overlapping a
+bucket get shoved apart violently. The ladder now starts clear of the pile
+and is lowered in.
+
+**The robot was 5° off square.** Onshape rooted the tree at a motor part
+sitting 5° off the chassis, so "forward" drifted sideways and the MuJoCo pit
+looked crooked. `fix_kinematics.py` now adds a proper `base_link`.
+
+**The MuJoCo viewer breaks with the NVIDIA offload variables** (`OpenGL
+error 0x502`) on this Wayland desktop. Run it without them; physics is on
+the CPU anyway.
+
+**Old Gazebo servers kept running in the background** after tests and
+answered queries meant for the new one. If results look stale, check
+`ps aux | grep gz-sim` and stop leftovers.
 
 ---
 
-## 14. Glossary
+## 15. Glossary
 
 | Term | Meaning |
 |---|---|
+| **base_link** | the robot's main frame: x forward, y left, z up |
 | **colcon** | ROS 2 build tool |
+| **convex hull** | the shape you get by shrink-wrapping a mesh; what MuJoCo collides with |
 | **controller** | ros2_control plugin that turns commands into joint actions |
 | **controller_manager** | runs controllers in a loop |
 | **DART** | Gazebo's default physics engine |
@@ -769,6 +882,9 @@ has no rolling resistance). Digging simulation is not part of the repo yet.
 | **hardware interface** | ros2_control's link to real or simulated joints |
 | **launch file** | Python script that starts a set of nodes |
 | **link** | a rigid part in a URDF |
+| **mocap body** | MuJoCo body moved by script; pushes things but can't be pushed |
+| **MuJoCo** | fast physics engine, used here for the digging test |
+| **MJCF** | MuJoCo's model format |
 | **joint** | a connection between two links (fixed or moving) |
 | **lumping** | Gazebo merging links joined by fixed joints |
 | **node** | one ROS program |

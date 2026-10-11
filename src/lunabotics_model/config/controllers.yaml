@@ -33,7 +33,7 @@ diff_drive_controller:
     # the wheels were further apart; measured in Gazebo (commanded vs actual yaw).
     wheel_separation_multiplier: 2.1
     wheel_radius: 0.1805      # m
-    base_frame_id: root
+    base_frame_id: base_link
     odom_frame_id: odom
     enable_odom_tf: true
     # teleop_twist_keyboard sends one message per key press, so keep the last

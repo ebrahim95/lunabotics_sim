@@ -19,10 +19,14 @@ What the raw export gets wrong:
   * The buckets are fastened rigidly to the belt, so Gazebo merges them into
     the ladder and nothing can move them around the loop.
   * No link has <collision> geometry, so the robot falls through the ground.
+  * The tree is rooted at a motor part ~5 degrees off the chassis, so the
+    robot's frame isn't square to the robot (see add_base_frame).
     Collisions are generated from the meshes (see COLLISION_SHAPES).
 
-What this script produces (every part keeps its exact world pose):
-  root
+What this script produces (every part keeps its exact pose relative to the
+others; the whole robot is re-based on a ROS-style base_link):
+  base_link  (x forward, y left, z up; origin on the ground between the wheels)
+   '- root
    |- motors -> continuous revolute_1* -> flange_k -> wheel   (one wheel per flange)
    '- 30___30___700_1 (chassis frame) ... 30___60___400_3 -> slider_bracket
         '- prismatic excavator_lift -> ladder (side plates, both shafts, belt, buckets)
@@ -189,13 +193,24 @@ def joint_motion(joint, q):
     return M
 
 
+def tree_root(robot):
+    """The one link that is nobody's child."""
+    child_links = {j.find("child").get("link") for j in robot.findall("joint")}
+    roots = [l.get("name") for l in robot.findall("link") if l.get("name") not in child_links]
+    if len(roots) != 1:
+        raise RuntimeError(f"Expected one root link, found {roots}")
+    return roots[0]
+
+
 def world_poses(robot, q=None):
+    """Pose of every link frame in the root link's frame (joints at q, default 0)."""
     q = q or {}
     children = {}
     for j in robot.findall("joint"):
         children.setdefault(j.find("parent").get("link"), []).append(j)
-    W = {"root": np.eye(4)}
-    stack = ["root"]
+    root = tree_root(robot)
+    W = {root: np.eye(4)}
+    stack = [root]
     while stack:
         p = stack.pop()
         for j in children.get(p, []):
@@ -316,12 +331,63 @@ def fix(robot, mesh_root):
 
     belt = add_belt_track(robot, W)
     add_collisions(robot, mesh_root)
+    add_base_frame(robot)
 
     # Keep joints grouped and ordered for readability.
     for j in sorted(robot.findall("joint"), key=lambda j: j.get("name")):
         robot.remove(j)
         robot.append(j)
     return sorted(drop_links), belt
+
+
+def add_base_frame(robot):
+    """Add `base_link` as the new root: ROS-style chassis frame.
+
+    Onshape roots the tree at a motor part that sits ~5 degrees off the
+    chassis, so `root` is not square to the robot. base_link is: x forward
+    (toward the excavator, perpendicular to the wheel axles), y left, z up,
+    origin on the ground centred between the four wheels. `root` hangs off it
+    on a fixed joint, so every part keeps its pose relative to the others.
+    """
+    W = world_poses(robot)
+    links = {l.get("name"): l for l in robot.findall("link")}
+    joints = {j.get("name"): j for j in robot.findall("joint")}
+
+    centres, radius = [], None
+    for wheel in WHEELS:
+        col = links[wheel].find("collision")
+        centres.append((W[wheel] @ origin_to_T(col.find("origin")))[:3, 3])
+        radius = float(col.find("geometry/cylinder").get("radius"))
+    centres = np.array(centres)
+
+    # Wheel axle direction (all wheel joints share it after fix()).
+    j = joints[WHEEL_JOINTS[0]]
+    axle = W[j.find("child").get("link")][:3, :3] @ np.array(list(map(float, j.find("axis").get("xyz").split())))
+    up = np.array([0.0, 0.0, 1.0])
+    axle = axle - (axle @ up) * up
+    axle /= np.linalg.norm(axle)
+    forward = np.cross(axle, up)  # + wheel speed drives this way (toward the excavator)
+    left = np.cross(up, forward)
+
+    B = np.eye(4)
+    B[:3, :3] = np.column_stack([forward, left, up])
+    B[:3, 3] = [centres[:, 0].mean(), centres[:, 1].mean(), centres[:, 2].min() - radius]
+
+    base = ET.Element("link", name="base_link")
+    robot.insert(0, base)
+    jb = ET.SubElement(robot, "joint", name="base_link_to_root", type="fixed")
+    ET.SubElement(jb, "parent", link="base_link")
+    ET.SubElement(jb, "child", link="root")
+    set_origin(jb, np.linalg.inv(B))
+
+    # Relative poses must be unchanged: W_new = inv(B) @ W_old for every link.
+    W_new = world_poses(robot)
+    worst = max(np.abs(W_new[n] - np.linalg.inv(B) @ W[n]).max() for n in W)
+    if worst > 1e-6:
+        raise RuntimeError(f"Adding base_link moved parts by up to {worst:g}")
+    yaw = np.degrees(np.arctan2(forward[1], forward[0]))
+    print(f"base_link: root was {abs(yaw + 90):.2f} deg off square; "
+          f"wheels touch the ground at base_link z = 0")
 
 
 def load_stl_vertices(path):
