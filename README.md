@@ -94,7 +94,7 @@ ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true
 | `k` | Stop |
 | `q` / `z` | Increase / decrease speed |
 
-Run the excavator belt (`0.0` to stop):
+Run the excavator belt in rad/s, up to `5.24` (the motor's 50 rpm; `0.0` to stop):
 
 ```bash
 ros2 topic pub -w 1 --times 3 /belt_velocity_controller/commands std_msgs/msg/Float64MultiArray "{data: [3.0]}"

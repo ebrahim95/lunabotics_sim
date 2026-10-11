@@ -776,7 +776,10 @@ What the wheel limit means for a 50 kg robot: four motors at 20 N·m on
 weight (490 N). That's plenty to drive and climb on a rigid floor, but
 pivoting on the spot needs the wheels to slip sideways (WheelSlip or the
 soft-soil model) or the motors stall. The wheels never exceed 70 rpm, so
-the robot tops out near 1.3 m/s (the drive controller caps it at 1.0 m/s).
+the robot tops out near 1.3 m/s (the drive controller caps it at 1.0 m/s). The belt roller is held to 50 rpm
+(5.24 rad/s, ≈ 0.25 m/s belt speed) whatever you command; in Gazebo the
+buckets lag their target by ~17 mm at 3 rad/s and ~29 mm at full speed,
+settling when the belt stops.
 
 ### The result
 
@@ -1052,7 +1055,7 @@ not a faithful copy of the robot in BP-1.
 | Mass distribution | battery, electronics and bin masses are assumed; wheels take the remainder (affects tipping, braking, wheel loads) |
 | Wheel slip (0.6) | estimated for loose sand, not measured on these wheels in BP-1 |
 | Ground friction (0.8) | from BP-1's internal friction angle; real wheel traction can be lower |
-| Excavator actuators | belt motor (50 N·m) and lift (500 N, ±15 cm) are placeholders |
+| Excavator actuators | belt motor is the TSINY TS-30GZ6287 (6 N·m, 50 rpm) from seller listings, assumed direct on the roller; the lift (500 N, ±15 cm) is still a placeholder. The buckets don't load the belt motor, so it never stalls |
 
 ### Not modelled
 
