@@ -647,6 +647,7 @@ lunabotics_sim/
     │   ├── fix_kinematics.py     repairs the raw export (section 7, 8)
     │   ├── add_ros2_control.py   adds hardware blocks (section 9)
     │   ├── belt_animator.py      runs the buckets round the belt (section 8)
+    │   ├── motor_monitor.py      live table of motor torque and load (section 7)
     │   └── generate_arena_world.py  writes the Artemis Arena world (section 4)
     ├── worlds/
     │   ├── artemis_arena.world.sdf   GENERATED: Lunabotics arena with BP-1
@@ -805,6 +806,24 @@ named constants at its top; regenerate as in the README):
 | Cruising, `soil:=rigid` | close to 0 |
 | Lift holding the ladder | ~65 N (of 311 N available) |
 | Belt running | ~0 N·m — the buckets don't load the belt in Gazebo |
+
+`ros2 topic echo` prints those as 37 bare numbers in the order of the
+`name` field — the 30 bucket joints and the idler roller first (all `nan`,
+since nothing drives them), then the belt roller, the lift and the four
+wheels. `scripts/motor_monitor.py` (`ros2 run lunabotics_model
+motor_monitor.py`) turns that into a table refreshed twice a second: one
+row per motor, labelled by position (`revolute_1_2` front-left,
+`revolute_1_3` front-right, `revolute_1_1` rear-left, `revolute_1` rear-right),
+with the average torque or force since the last refresh, the peak, the
+speed in rpm (mm/s for the lift) and a bar showing how much of the limit
+is in use — green under 60%, yellow under 90%, red above. Averaging matters
+at standstill: each wheel's velocity loop nudges it back and forth, so the
+raw effort flips between about +0.1 and −0.1 N·m every message; the average
+is ~0. Positive means a wheel driving forward (all four wheel axes point the
+same way, +y), the belt running in the positive command direction, and the
+lift pushing the ladder up. The limits are imported from
+`fix_kinematics.py`, so the table follows any change to `WHEEL_EFFORT`,
+`ROLLER_EFFORT` or `LIFT_EFFORT`.
 
 What the wheel limit means for a 50 kg robot: four motors at 20 N·m on
 0.1805 m wheels push up to 4 × 20 ÷ 0.1805 ≈ **443 N**, close to the robot's
@@ -978,6 +997,7 @@ controller sets the drive roller's velocity → the roller turns →
 | Which nodes are running? | `ros2 node list` |
 | Which topics exist? | `ros2 topic list` |
 | What's on a topic? | `ros2 topic echo /joint_states` |
+| How hard are the motors working? | `ros2 run lunabotics_model motor_monitor.py` |
 | Who publishes / subscribes? | `ros2 topic info /cmd_vel` |
 | How fast is it published? | `ros2 topic hz /joint_states` |
 | Are the controllers running? | `ros2 control list_controllers` |

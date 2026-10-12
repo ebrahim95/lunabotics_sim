@@ -27,6 +27,7 @@ install(PROGRAMS
   scripts/add_ros2_control.py
   scripts/generate_arena_world.py
   scripts/bekker_terramechanics.py
+  scripts/motor_monitor.py
   DESTINATION lib/${PROJECT_NAME}
 )
 if(BUILD_TESTING)

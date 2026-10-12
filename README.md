@@ -120,8 +120,13 @@ ros2 topic pub -w 1 --times 3 /excavator_lift_controller/commands std_msgs/msg/F
 ros2 topic pub -w 1 --times 3 /excavator_lift_controller/commands std_msgs/msg/Float64MultiArray "{data: [0.0]}"
 ```
 
-Watch the motors' live torque (wheels, belt roller) and the lift's force, in
-the order of the `name` field:
+Watch the motors' live torque (wheels, belt roller) and the lift's force as a table:
+
+```bash
+ros2 run lunabotics_model motor_monitor.py
+```
+
+Raw values, in the order of the `name` field:
 
 ```bash
 ros2 topic echo /joint_states --field name
