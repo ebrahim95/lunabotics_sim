@@ -2,15 +2,15 @@
 
 ### Gazebo
 
-[![Robot in the Artemis Arena in Gazebo](media/pictures/gazebo.png)](media/videos/gazebo.webm)
+[![Robot in the Artemis Arena in Gazebo](media/gifs/gazebo.gif)](media/videos/gazebo.webm)
 
-▶ [Video: driving in the Artemis Arena](media/videos/gazebo.webm)
+▶ [Full video (GIF above is 3× speed): driving in the Artemis Arena](media/videos/gazebo.webm)
 
 ### MuJoCo
 
-[![MuJoCo bucket digging test](media/pictures/mujuco.png)](media/videos/mujuco.webm)
+[![MuJoCo bucket digging test](media/gifs/mujuco.gif)](media/videos/mujuco.webm)
 
-▶ [Video: bucket digging test](media/videos/mujuco.webm)
+▶ [Full video (GIF above is 3× speed): bucket digging test](media/videos/mujuco.webm)
 
 For how everything works, see [docs/GUIDE.md](docs/GUIDE.md); for what the
 simulation can and can't be trusted for, see its section 14.
