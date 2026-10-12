@@ -405,7 +405,7 @@ to each wheel every physics step:
 | Traction | Janosi–Hanamoto shear, H = (A·c + W·tan φ)(1 − K/(sL)(1 − e^(−sL/K))) | the more the wheel slips (s), the more it can push |
 | Rolling resistance | compaction, R = b(k_c/b + k_φ) z^(n+1)/(n+1) | the wheel keeps climbing out of its own rut |
 | Sideways | same shear curve with sideways slip | skid-steer wheels plough sideways when turning |
-| Torque | the forces act at the bottom of the wheel | the motors feel the load |
+| Torque | shear (traction, sideways) acts at the contact patch; soil pressure (support, rolling resistance) acts on the rim towards the axle | the motors must supply traction × radius, ~4.3 N·m per wheel when cruising |
 
 (z sinkage, b wheel width, D wheel diameter, L = √(Dz) contact length,
 A = bL contact area.) The soil surface comes from the arena's height grid
@@ -445,6 +445,26 @@ still touch the default ground plane, so use it in the arena.
 Gazebo can use different physics engines. The default, **DART**, is used
 here. Physics runs on the **CPU only**. The GPU only renders the window —
 that's what `gpu:=true` is for.
+
+### Simulation speed (real-time factor)
+
+The **real-time factor (RTF)** is simulated time ÷ real time: 1.0 means one
+simulated second takes one real second; 0.4 means it takes 2.5 s. Physics
+runs on the CPU only (one core per simulation), so a faster GPU only makes
+the window smoother. Measured on this laptop:
+
+| Simulation | RTF |
+|---|---|
+| Gazebo, empty world | ~0.8 |
+| Gazebo, Artemis Arena, `soil:=rigid` | ~0.66 |
+| Gazebo, Artemis Arena, `soil:=bekker` | ~0.4 (the Python soil plugin) |
+| MuJoCo digging test, 484 particles, no window | ~0.15–0.2 |
+| MuJoCo digging test with the viewer | ~0.12–0.14 |
+
+What costs the most: the 1 ms physics step, the 30 bucket joints held in
+position, the arena's terrain mesh, the soil plugin running in Python, and
+(in MuJoCo) every particle-to-particle contact. Controllers and odometry
+run on sim time, so everything still behaves correctly — just slower.
 
 ### Server and GUI
 
@@ -771,6 +791,20 @@ named constants at its top; regenerate as in the README):
 | Excavator lift, `excavator_lift` | **311 N = 2 × 35 lb** (`LIFT_EFFORT`) | **0.0508 m/s = 2"/s** (`LIFT_VELOCITY`); travel **−0.152 to 0 m** (6" stroke down from the CAD pose) | **two** Progressive Automations PA-14-6-35, one each side, driven together (12 V; 35 lb each; 1.38"/s at full load); assumed pushing straight along the rails, CAD pose = retracted |
 | Bucket track joints (×30) | 200 N / N·m (`BUCKET_EFFORT`) | 5 m/s / rad/s (`BUCKET_VELOCITY`) | simulation only (moves the buckets round the belt) |
 | Drive controller | — | 1.0 m/s forward, 2.0 rad/s turning | `linear.x.max_velocity`, `angular.z.max_velocity` in `config/controllers.yaml` |
+
+**Live torque.** The wheels, the belt roller and the lift also report their
+*effort* (torque in N·m, or force in N for the lift) on `/joint_states`
+(`ros2 topic echo /joint_states --field effort`). Measured in the arena:
+
+| Situation | Effort |
+|---|---|
+| Standing still | ~0.15 N·m per wheel |
+| Cruising 0.3 m/s, `soil:=bekker` | ~4.3 N·m per wheel |
+| Cruising 1.0 m/s, `soil:=bekker` | ~5.1 N·m per wheel |
+| Accelerating to 1.0 m/s | 20 N·m per wheel (the motor limit) |
+| Cruising, `soil:=rigid` | close to 0 |
+| Lift holding the ladder | ~65 N (of 311 N available) |
+| Belt running | ~0 N·m — the buckets don't load the belt in Gazebo |
 
 What the wheel limit means for a 50 kg robot: four motors at 20 N·m on
 0.1805 m wheels push up to 4 × 20 ÷ 0.1805 ≈ **443 N**, close to the robot's
@@ -1142,6 +1176,13 @@ looked crooked. `fix_kinematics.py` now adds a proper `base_link`.
 **The MuJoCo viewer breaks with the NVIDIA offload variables** (`OpenGL
 error 0x502`) on this Wayland desktop. Run it without them; physics is on
 the CPU anyway.
+
+**Where a force acts matters.** The first soft-soil version applied rolling
+resistance at the bottom of the wheel, where it cancelled the traction
+torque: the robot drove the same, but the motors read ~0.1 N·m while
+cruising instead of ~4.3. Soil pressure pushes on the rim towards the axle,
+so rolling resistance must be applied through the axle; only shear twists
+the wheel.
 
 **Measure speeds in sim time.** The arena sim runs at ~0.6× real time; a
 test that timed the robot with the wall clock saw a fake "45% wheel slip".

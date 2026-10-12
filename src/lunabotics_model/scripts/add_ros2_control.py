@@ -86,7 +86,8 @@ BEKKER_PLUGIN = """        <plugin filename="gz-sim-python-system-loader-system"
     <gazebo>"""
 
 
-def joint_xml(name, command="velocity", initial=None):
+def joint_xml(name, command="velocity", initial=None, effort=False):
+    """effort=True also reports the joint's torque/force on /joint_states."""
     lines = [f'        <joint name="{name}">']
     if command:
         lines.append(f'            <command_interface name="{command}"/>')
@@ -97,6 +98,8 @@ def joint_xml(name, command="velocity", initial=None):
         lines.append(f'                <param name="initial_value">{initial:.9g}</param>')
         lines.append('            </state_interface>')
     lines.append('            <state_interface name="velocity"/>')
+    if effort:
+        lines.append('            <state_interface name="effort"/>')
     lines.append("        </joint>")
     return "\n".join(lines)
 
@@ -152,8 +155,9 @@ def terramechanics_config(urdf_text, path):
 def build_block(belt_joints, belt_start, soil_plugin):
     return ROS2_CONTROL_BLOCK.format(
         soil_plugin=soil_plugin,
-        wheel_joints="\n".join(joint_xml(j) for j in WHEEL_JOINTS),
-        excavator_joints="\n".join(joint_xml(j, c) for j, c in EXCAVATOR_JOINTS),
+        # Real motors (wheels, belt, lift) report their torque/force too.
+        wheel_joints="\n".join(joint_xml(j, effort=True) for j in WHEEL_JOINTS),
+        excavator_joints="\n".join(joint_xml(j, c, effort=c is not None) for j, c in EXCAVATOR_JOINTS),
         belt_joints="\n".join(
             joint_xml(j, "position", belt_start.get(j)) for j in belt_joints),
     )

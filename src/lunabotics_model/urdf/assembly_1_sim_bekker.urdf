@@ -2027,21 +2027,25 @@
             <command_interface name="velocity"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
+            <state_interface name="effort"/>
         </joint>
         <joint name="revolute_1_1">
             <command_interface name="velocity"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
+            <state_interface name="effort"/>
         </joint>
         <joint name="revolute_1_2">
             <command_interface name="velocity"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
+            <state_interface name="effort"/>
         </joint>
         <joint name="revolute_1_3">
             <command_interface name="velocity"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
+            <state_interface name="effort"/>
         </joint>
     </ros2_control>
 
@@ -2053,11 +2057,13 @@
             <command_interface name="velocity"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
+            <state_interface name="effort"/>
         </joint>
         <joint name="excavator_lift">
             <command_interface name="position"/>
             <state_interface name="position"/>
             <state_interface name="velocity"/>
+            <state_interface name="effort"/>
         </joint>
         <joint name="idler_roller_joint">
             <state_interface name="position"/>

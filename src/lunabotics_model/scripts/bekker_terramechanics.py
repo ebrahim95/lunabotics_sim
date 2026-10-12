@@ -84,7 +84,8 @@ class Terrain:
 
 
 def wheel_forces(r, b, z, vx, vy, spin, soil, vz):
-    """Soil force on one wheel in its contact frame: (support, along, sideways).
+    """Soil forces on one wheel: (support W, shear traction H, compaction
+    resistance R, sideways F_side, slip s).
 
     vx/vy: wheel centre velocity forward/sideways; spin: axle rate (rad/s,
     + rolls forward); vz: vertical velocity of the wheel centre.
@@ -114,7 +115,7 @@ def wheel_forces(r, b, z, vx, vy, spin, soil, vz):
     x_y = abs(s_y) * L / K
     shear_y = (1 - (1 - math.exp(-x_y)) / x_y) if x_y > 1e-9 else 0.0
     F_side = -math.copysign(H_max * shear_y, vy)
-    return W, H - R, F_side, s
+    return W, H, R, F_side, s
 
 
 class BekkerTerramechanics:
@@ -172,11 +173,18 @@ class BekkerTerramechanics:
             forward = np.cross(axle, UP)
             forward /= np.linalg.norm(forward)
             side = np.cross(UP, forward)
-            W, Fx, Fy, s = wheel_forces(w["r"], w["b"], z, v_centre @ forward, v_centre @ side,
-                                        omega @ axle, SOIL, v_centre @ UP)
-            F = W * UP + Fx * forward + Fy * side
+            W, H, R, Fy, s = wheel_forces(w["r"], w["b"], z, v_centre @ forward, v_centre @ side,
+                                           omega @ axle, SOIL, v_centre @ UP)
+            # Shear (traction, sideways) acts at the contact patch, so it
+            # twists the wheel and the motor must supply H*r. Soil pressure
+            # (support W, compaction resistance R) acts on the rim towards
+            # the axle, so it pushes the wheel without twisting it.
+            shear = H * forward + Fy * side
+            pressure = W * UP - R * forward
+            F = shear + pressure
             com = vec(link.world_inertial_pose(ecm).pos())
-            torque = np.cross(bottom - com, F)
+            torque = np.cross(bottom - com, shear) + np.cross(centre - com, pressure)
+            Fx = H - R
             link.add_world_wrench(ecm, Vector3d(*F), Vector3d(*torque))
             if self.debug:
                 self.stats.append((z, s, W, Fx))
