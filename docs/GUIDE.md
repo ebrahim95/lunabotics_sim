@@ -1013,6 +1013,74 @@ controller sets the drive roller's velocity → the roller turns →
 `/joint_states` reports its angle → `belt_animator` computes bucket positions
 → `bucket_position_controller` moves the 30 bucket joints.
 
+### All the teleop keys
+
+`teleop_twist_keyboard` only drives the wheels. Each key sets a forward
+speed (`linear.x`) and a turning speed (`angular.z`) on `/cmd_vel`, and
+`diff_drive_controller` turns them into left and right wheel speeds.
+
+**Driving keys** form a 3×3 square with stop in the middle:
+
+```
+   u    i    o          forward-left   forward   forward-right
+   j    k    l    →     spin left      STOP      spin right
+   m    ,    .          back-left      reverse   back-right
+```
+
+| Key | Forward | Turning | What the robot does |
+|---|---|---|---|
+| `i` | + | 0 | straight forward |
+| `,` | − | 0 | straight backward |
+| `j` | 0 | + | spins on the spot to the left (counter-clockwise) |
+| `l` | 0 | − | spins on the spot to the right |
+| `u` | + | + | drives forward while curving left |
+| `o` | + | − | drives forward while curving right |
+| `m` | − | − | reverses with its tail swinging left |
+| `.` | − | + | reverses with its tail swinging right |
+| `k` | 0 | 0 | stop |
+
+Any key not listed here also stops the robot; Ctrl+C quits teleop. The
+robot keeps going after you let go of a key, because teleop sends one
+message per press and the controller keeps obeying it for up to an hour
+(`cmd_vel_timeout: 3600`).
+
+**Speed keys.** Teleop starts at 0.5 m/s forward and 1.0 rad/s turning.
+Each press changes the speed by 10% and prints the new value. It applies to
+the next driving key you press, so press `i` again to go faster.
+
+| Key | Changes |
+|---|---|
+| `q` / `z` | both speeds up / down |
+| `w` / `x` | forward speed only up / down |
+| `e` / `c` | turning speed only up / down |
+
+The controller won't go above 1.0 m/s or 2.0 rad/s, whatever teleop shows
+(`config/controllers.yaml`); the motors top out at 70 rpm, about 1.3 m/s.
+
+**Keys that do nothing on this robot.**
+
+- Shift + key (`U I O J L M < >`) are sideways (strafing) versions for
+  robots with omni wheels. A skid-steer robot can't move sideways, so the
+  controller ignores the sideways part: `I`, `U` and `O` act like straight
+  forward, `<`, `M` and `>` like straight backward, and `J` and `L` do
+  nothing.
+- `t` / `b` are up and down, for drones. Ignored.
+
+**How it behaves in the simulation.**
+
+- Rigid floor: the robot follows the commands closely. Spinning on the
+  spot (`j`/`l`) relies on the wheels sliding sideways, which wheel slip
+  allows.
+- `soil:=bekker`: the robot speeds up more slowly, cruises about 12%
+  slower than commanded, and turns about two-thirds as far as commanded,
+  because the wheels sink and slip in the BP-1.
+- Odometry (`/odom`) comes from wheel rotation, so it drifts more the more
+  the wheels slip (see [What is odometry?](#what-is-odometry)).
+
+The belt and the ladder lift have no keys; command them with
+`ros2 topic pub` as in the README (belt 0 to 5.24 rad/s, lift −0.152 m
+fully lowered to 0 m fully raised).
+
 ---
 
 ## 12. Debugging toolbox
