@@ -1,5 +1,9 @@
 # lunabotics_sim
 
+![Robot in the Artemis Arena in Gazebo](media/gazebo.png)
+
+![MuJoCo bucket digging test](media/mujuco.png)
+
 For how everything works, see [docs/GUIDE.md](docs/GUIDE.md); for what the
 simulation can and can't be trusted for, see its section 14.
 
