@@ -28,6 +28,7 @@ install(PROGRAMS
   scripts/generate_arena_world.py
   scripts/bekker_terramechanics.py
   scripts/motor_monitor.py
+  scripts/teleop_keyboard.py
   DESTINATION lib/${PROJECT_NAME}
 )
 if(BUILD_TESTING)

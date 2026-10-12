@@ -103,23 +103,37 @@ Open a second terminal and run:
 cd ~/Desktop/lunabotics_sim && source install/setup.bash
 ```
 
-Drive with the keyboard (the robot keeps moving until you press `k`):
+Drive and run the excavator with the keyboard:
 
 ```bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true -p use_sim_time:=true
+ros2 run lunabotics_model teleop_keyboard.py
 ```
 
 | Key | Action |
 |---|---|
 | `i` | Forward |
 | `,` | Reverse |
-| `j` / `l` | Turn left / right |
+| `j` / `l` | Spin left / right |
 | `u` / `o` | Forward, curving left / right |
 | `m` / `.` | Reverse, curving left / right |
-| `k` | Stop |
-| `q` / `z` | Increase / decrease speed |
+| `k` | Stop driving |
+| `q` / `z` | All speeds up / down 10% |
+| `w` / `x` | Forward speed up / down 10% |
+| `e` / `c` | Turning speed up / down 10% |
+| `r` / `f` | Belt faster / slower (1 rad/s per press, `f` past 0 reverses) |
+| `v` | Stop the belt |
+| `t` / `g` | Raise / lower the ladder 1" |
+| `y` / `h` | Ladder fully raised / fully lowered |
+| Space | Stop driving and the belt |
+| Ctrl+C | Stop driving and the belt, then quit |
 
-Run the excavator belt in rad/s, up to `5.24` (the motor's 50 rpm; `0.0` to stop):
+Drive only, with the standard ROS teleop:
+
+```bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard --ros-args -p stamped:=true -p use_sim_time:=true
+```
+
+Command the excavator from the terminal instead. Belt speed in rad/s, up to `5.24` (`0.0` to stop):
 
 ```bash
 ros2 topic pub -w 1 --times 3 /belt_velocity_controller/commands std_msgs/msg/Float64MultiArray "{data: [3.0]}"

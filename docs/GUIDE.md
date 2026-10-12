@@ -60,10 +60,10 @@ Gazebo.
 At runtime:
 
 ```
- keyboard ─► teleop_twist_keyboard ─► /cmd_vel ─► diff_drive_controller ─┐
-                                                                         │
- ros2 topic pub ─► /belt_velocity_controller/commands ─────────────────┐ │
- ros2 topic pub ─► /excavator_lift_controller/commands ──────────────┐ │ │
+ keys ─► teleop_keyboard ─┬─► /cmd_vel ─► diff_drive_controller ─────────┐
+                          │                                              │
+                          ├─► /belt_velocity_controller/commands ──────┐ │
+                          └─► /excavator_lift_controller/commands ───┐ │ │
                                                                      ▼ ▼ ▼
                                                      controller_manager (inside Gazebo)
                                                                      │
@@ -104,7 +104,7 @@ A **node** is one running program with one job. In this project:
 | `robot_state_publisher` | Turns joint angles into 3D positions of every part (TF) |
 | `belt_animator` | Moves the buckets round the belt |
 | `controller_manager` | Runs the controllers (lives inside Gazebo) |
-| `teleop_twist_keyboard` | Turns key presses into velocity commands |
+| `lunabotics_teleop` (`teleop_keyboard.py`) | Turns key presses into drive, belt and lift commands |
 | `rviz2` | 3D visualisation |
 | `parameter_bridge` | Copies the simulation clock from Gazebo into ROS |
 
@@ -124,8 +124,8 @@ Topics used here:
 |---|---|---|
 | `/cmd_vel` | `geometry_msgs/TwistStamped` | teleop → diff_drive_controller |
 | `/joint_states` | `sensor_msgs/JointState` | joint_state_broadcaster → everyone |
-| `/belt_velocity_controller/commands` | `std_msgs/Float64MultiArray` | you → belt controller |
-| `/excavator_lift_controller/commands` | `std_msgs/Float64MultiArray` | you → lift controller |
+| `/belt_velocity_controller/commands` | `std_msgs/Float64MultiArray` | teleop or you → belt controller |
+| `/excavator_lift_controller/commands` | `std_msgs/Float64MultiArray` | teleop or you → lift controller |
 | `/bucket_position_controller/commands` | `std_msgs/Float64MultiArray` | belt_animator → bucket controller |
 | `/bucket_joint_states` | `sensor_msgs/JointState` | belt_animator → joint_state_publisher (RViz mode) |
 | `/diff_drive_controller/odom` | `nav_msgs/Odometry` | diff_drive_controller → anyone |
@@ -648,6 +648,7 @@ lunabotics_sim/
     │   ├── add_ros2_control.py   adds hardware blocks (section 9)
     │   ├── belt_animator.py      runs the buckets round the belt (section 8)
     │   ├── motor_monitor.py      live table of motor torque and load (section 7)
+    │   ├── teleop_keyboard.py    keyboard driving + excavator (section 11)
     │   └── generate_arena_world.py  writes the Artemis Arena world (section 4)
     ├── worlds/
     │   ├── artemis_arena.world.sdf   GENERATED: Lunabotics arena with BP-1
@@ -992,7 +993,7 @@ RViz. No physics. The slider GUI takes the bucket joint values from
 
 You press `i` in the teleop terminal:
 
-1. `teleop_twist_keyboard` publishes **one** `TwistStamped` on `/cmd_vel`:
+1. `teleop_keyboard.py` publishes **one** `TwistStamped` on `/cmd_vel`:
    `linear.x = 0.5`, stamped with sim time (because of `use_sim_time:=true`).
 2. `diff_drive_controller` receives it (we remapped its input topic to
    `/cmd_vel`), computes left and right wheel speeds
@@ -1015,9 +1016,12 @@ controller sets the drive roller's velocity → the roller turns →
 
 ### All the teleop keys
 
-`teleop_twist_keyboard` only drives the wheels. Each key sets a forward
+`scripts/teleop_keyboard.py` (`ros2 run lunabotics_model teleop_keyboard.py`)
+drives the wheels and runs the excavator from one terminal. Its driving keys
+are the same as the standard `teleop_twist_keyboard`'s: each sets a forward
 speed (`linear.x`) and a turning speed (`angular.z`) on `/cmd_vel`, and
-`diff_drive_controller` turns them into left and right wheel speeds.
+`diff_drive_controller` turns them into left and right wheel speeds. It
+prints the current drive, belt and ladder commands on one status line.
 
 **Driving keys** form a 3×3 square with stop in the middle:
 
@@ -1039,7 +1043,8 @@ speed (`linear.x`) and a turning speed (`angular.z`) on `/cmd_vel`, and
 | `.` | − | + | reverses with its tail swinging right |
 | `k` | 0 | 0 | stop |
 
-Any key not listed here also stops the robot; Ctrl+C quits teleop. The
+Any key not listed in this section also stops driving. Ctrl+C stops
+driving and the belt, then quits. The
 robot keeps going after you let go of a key, because teleop sends one
 message per press and the controller keeps obeying it for up to an hour
 (`cmd_vel_timeout: 3600`).
@@ -1057,7 +1062,28 @@ the next driving key you press, so press `i` again to go faster.
 The controller won't go above 1.0 m/s or 2.0 rad/s, whatever teleop shows
 (`config/controllers.yaml`); the motors top out at 70 rpm, about 1.3 m/s.
 
-**Keys that do nothing on this robot.**
+**Excavator keys.**
+
+| Key | Does | Topic |
+|---|---|---|
+| `r` / `f` | belt 1 rad/s faster / slower; `f` past 0 runs it in reverse | `/belt_velocity_controller/commands` |
+| `v` | stop the belt | ″ |
+| `t` / `g` | raise / lower the ladder 1" (0.0254 m) | `/excavator_lift_controller/commands` |
+| `y` / `h` | ladder fully raised (0 m) / fully lowered (−0.152 m) | ″ |
+| Space | stop driving and the belt | both drive and belt |
+
+The belt keys set a speed, so the belt keeps running until you press `v`
+or Space; it tops out at ±5.24 rad/s (50 rpm). Reverse is there to clear
+a jam. The lift keys set a position: the ladder moves there at the
+actuators' 2"/s and holds it. Space leaves the ladder where it is, since
+the actuators hold position anyway. The limits are imported from
+`fix_kinematics.py` (`ROLLER_VELOCITY`, `LIFT_LOWER`, `LIFT_UPPER`), so
+they follow any change to the model.
+
+**Using the standard `teleop_twist_keyboard` instead.** It has the same
+driving and speed keys but no excavator keys; command the belt and lift
+with `ros2 topic pub` (see the README). Its extra keys do nothing on this
+robot:
 
 - Shift + key (`U I O J L M < >`) are sideways (strafing) versions for
   robots with omni wheels. A skid-steer robot can't move sideways, so the
@@ -1076,10 +1102,6 @@ The controller won't go above 1.0 m/s or 2.0 rad/s, whatever teleop shows
   because the wheels sink and slip in the BP-1.
 - Odometry (`/odom`) comes from wheel rotation, so it drifts more the more
   the wheels slip (see [What is odometry?](#what-is-odometry)).
-
-The belt and the ladder lift have no keys; command them with
-`ros2 topic pub` as in the README (belt 0 to 5.24 rad/s, lift −0.152 m
-fully lowered to 0 m fully raised).
 
 ---
 
@@ -1259,8 +1281,9 @@ which we don't use. The launch file substitutes it.
 **The robot didn't stop / didn't move with teleop.** `diff_drive_controller`
 checks how old each command is using the message timestamp, on sim time.
 Without `use_sim_time:=true`, teleop stamps messages with wall-clock time,
-which looks like the far future to the controller. Always run teleop with
-`-p stamped:=true -p use_sim_time:=true`.
+which looks like the far future to the controller. `teleop_keyboard.py`
+forces sim time on itself; with the standard `teleop_twist_keyboard`, always
+add `-p stamped:=true -p use_sim_time:=true`.
 
 **`ros2 topic pub --once` sometimes does nothing.** It can exit before ROS
 discovery connects it to the subscriber, so the message is lost. Use
