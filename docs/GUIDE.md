@@ -825,6 +825,25 @@ lift pushing the ladder up. The limits are imported from
 `fix_kinematics.py`, so the table follows any change to `WHEEL_EFFORT`,
 `ROLLER_EFFORT` or `LIFT_EFFORT`.
 
+**Why the lift shows load while parked.** The lift holds about 65 N even
+when nothing moves, because it is holding the ladder up against gravity.
+The excavator ladder (frame, belt, rollers, buckets and belt motor) weighs
+about 8 kg, or about 78 N. It rides on slanted rails, so only the part of
+its weight along the rails pushes on the actuators: about 64 N, which is
+the 65 N on the table. That is 21% of the two actuators' combined 311 N.
+
+- In the simulation the lift joint is held by a position controller, so
+  the actuators must keep pushing up with that force or the ladder would
+  slide down the rails.
+- On the real robot the PA-14 is a lead-screw actuator, which normally
+  can't be driven backwards by its load. The weight rests on the screw
+  threads, and the motor draws almost no current while parked. The 65 N is
+  still a real force on the actuators, but it costs motor power only while
+  the lift moves, mostly when raising the ladder.
+
+When digging with the ladder lowered, the force rises as the buckets push
+into the regolith. The bar turns red above about 280 N (90% of the limit).
+
 What the wheel limit means for a 50 kg robot: four motors at 20 N·m on
 0.1805 m wheels push up to 4 × 20 ÷ 0.1805 ≈ **443 N**, close to the robot's
 weight (490 N). That's plenty to drive and climb on a rigid floor, but
@@ -869,6 +888,12 @@ ladder ─► bucket_N_belt_u   (prismatic: slide along the ladder)
 
 The two links between them (`*_belt_u_link`, `*_belt_v_link`) are invisible
 and tiny; they only exist to chain the joints.
+
+These are the 30 `bucket_*_belt_*` names (10 buckets × 3 joints) that fill
+the start of `/joint_states`. They have no motor, so their effort is `nan`.
+The real belt is driven by one motor on the drive roller
+(`drive_roller_joint`); `belt_animator.py` reads that roller's angle and
+sets all 30 joints to match.
 
 ### The loop shape
 
