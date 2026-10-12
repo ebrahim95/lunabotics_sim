@@ -1,6 +1,10 @@
 # lunabotics_sim
 
+### Gazebo
+
 ![Robot in the Artemis Arena in Gazebo](media/gazebo.png)
+
+### MuJoCo
 
 ![MuJoCo bucket digging test](media/mujuco.png)
 
