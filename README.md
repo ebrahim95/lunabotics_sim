@@ -233,6 +233,12 @@ use the NVIDIA offload variables with this viewer.
 Viewer controls: left-drag to rotate, right-drag to pan, scroll to zoom,
 space to pause.
 
+Run the belt motor at its full 50 rpm:
+
+```bash
+.venv-mujoco/bin/python mujoco_dig/dig_test.py --viewer --speed 0.254
+```
+
 Run without a window and print the counts and motor loads:
 
 ```bash
@@ -244,7 +250,7 @@ Options:
 | Option | Default | Meaning |
 |---|---|---|
 | `--duration` | `30` | seconds of digging |
-| `--speed` | `0.15` | belt speed (m/s) |
+| `--speed` | `0.15` | belt speed (m/s); `0.15` = 29.5 rpm at the drive roller, max `0.254` = 50 rpm |
 | `--lift` | `-0.12` | dig depth: ladder position on its rails (m) |
 | `--advance` | `0.005` | robot creep speed into the regolith (m/s) |
 | `--start-lift` | `0.0` | ladder position before digging starts (m) |

@@ -1244,6 +1244,14 @@ Change the bucket in Onshape, re-export, and the test uses the new shape.
   at `--belt-torque` (default 6 N·m, the TSINY): below the cap the belt
   runs at `--speed`; above it the belt slows. The worm gear can't be driven
   backwards, so a jammed belt stalls rather than running back.
+- **Belt motor speed.** The test is set by belt speed (`--speed`, m/s), not
+  rpm. The drive roller's pitch radius is 48.5 mm, so the default 0.15 m/s
+  is 0.15 ÷ 0.0485 = 3.09 rad/s ≈ **29.5 rpm** — about 60% of the TSINY's
+  50 rpm. That's the speed while the load is under the torque cap; at the
+  cap the belt slows or briefly stalls. Speeds above the motor's 50 rpm
+  (0.254 m/s belt, `ROLLER_VELOCITY`) are capped there, so `--speed 0.254`
+  runs it flat out. Like Gazebo, this assumes the motor turns the roller
+  directly, with no gearing between them.
 - **Rolling friction.** The spheres have rolling resistance (`condim="6"`),
   which Gazebo doesn't support, so a pile stays a pile.
 - **Sequence.** The pile settles for 1 s with the ladder raised
