@@ -1020,8 +1020,26 @@ controller sets the drive roller's velocity → the roller turns →
 drives the wheels and runs the excavator from one terminal. Its driving keys
 are the same as the standard `teleop_twist_keyboard`'s: each sets a forward
 speed (`linear.x`) and a turning speed (`angular.z`) on `/cmd_vel`, and
-`diff_drive_controller` turns them into left and right wheel speeds. It
-prints the current drive, belt and ladder commands on one status line.
+`diff_drive_controller` turns them into left and right wheel speeds.
+
+Under the key help it shows a status block that redraws in place five
+times a second:
+
+```
+        commanded                   actual
+Drive   +0.50 m/s  +0.00 rad/s      wheels L +26.7  R +25.8 rpm
+Belt    +3.00 rad/s (+29 rpm)       +29 rpm
+Ladder  1.0" down                   1.0" down
+Key speeds: forward 0.50 m/s, turn 1.00 rad/s
+```
+
+"Commanded" is what you last asked for; "actual" is what the robot is
+doing, read from `/joint_states` (the average speed of the left and right
+wheels, the belt roller's speed, the ladder's position). The two differ
+while the robot speeds up, while the ladder travels, and when the motors
+hit their torque limit. "Key speeds" are what the next driving key will
+use. The block redraws by moving the cursor back up over itself, and each
+line is cut to the terminal's width so it never wraps.
 
 **Driving keys** form a 3×3 square with stop in the middle:
 
