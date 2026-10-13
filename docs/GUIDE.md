@@ -458,7 +458,7 @@ the window smoother. Measured on this laptop:
 | Gazebo, empty world | ~0.8 |
 | Gazebo, Artemis Arena, `soil:=rigid` | ~0.66 |
 | Gazebo, Artemis Arena, `soil:=bekker` | ~0.4 (the Python soil plugin) |
-| MuJoCo digging test, 484 particles, no window | ~0.15–0.2 |
+| MuJoCo digging test, 484 particles, no window | ~0.15 |
 | MuJoCo digging test with the viewer | ~0.12–0.14 |
 
 What costs the most: the 1 ms physics step, the 30 bucket joints held in
@@ -1199,7 +1199,8 @@ Everything is built from the repaired URDF, so it matches the Gazebo robot:
 | Part | How it is modelled |
 |---|---|
 | Whole robot | every CAD mesh, display only (no collisions, no mass) |
-| Buckets (10) | the CAD bucket, moving round the belt loop with `loop_pose()` |
+| Buckets (10) | the CAD bucket (0.15 kg each), on its own joints on the ladder, held to its place on the belt loop (`loop_pose()`) by stiff servos |
+| Ladder | 6.5 kg body sliding on its rails on the `lift` joint, carrying the rollers and buckets |
 | Rollers | cylinders on the shafts |
 | Bin | the CAD V-shaped hopper |
 | Regolith | ~480 spheres, 2.4 cm, in a 10 cm deep pit in front of the ladder |
@@ -1222,11 +1223,27 @@ Change the bucket in Onshape, re-export, and the test uses the new shape.
 
 ### How things move
 
-- **Mocap bodies.** The chassis, the ladder and every bucket are MuJoCo
-  *mocap* bodies: the script sets their position each step and they push
-  anything in their way, but nothing pushes them back. So the buckets never
-  stall, and the robot never tips — this tests what the buckets *carry*, not
-  digging forces.
+- **Chassis: scripted.** The chassis (frame and bin) is a MuJoCo *mocap*
+  body: the script sets its position each step (`--advance`), it pushes
+  anything in its way, and nothing pushes it back. The wheels aren't
+  modelled, so the robot never tips or gets stuck.
+- **Lift: force-limited.** The ladder slides on a real joint, driven by a
+  position servo capped at `--lift-force` (default 311 N, the two
+  PA-14-6-35 actuators). Its target moves no faster than the actuators'
+  2"/s. Gravity on the ladder (≈64 N along the rails, as in Gazebo) and the
+  regolith pushing back on the buckets both load it; past the limit the
+  ladder stops going down, or gets pushed back up.
+- **Belt: torque-limited.** The belt is one coordinate, *travel* (metres
+  along the loop). Each bucket has three joints on the ladder (along it,
+  across it, about the shafts — the same as the URDF's
+  `bucket_N_belt_u/_v/_rot`) and a stiff servo on each, holding it at its
+  place on the loop for the current travel. The force those servos need
+  along the belt (lifting buckets full of regolith, dragging them through
+  the bed) is the load; times the 48.5 mm roller pitch radius it's the
+  torque the belt motor must give. The motor model is a speed loop capped
+  at `--belt-torque` (default 6 N·m, the TSINY): below the cap the belt
+  runs at `--speed`; above it the belt slows. The worm gear can't be driven
+  backwards, so a jammed belt stalls rather than running back.
 - **Rolling friction.** The spheres have rolling resistance (`condim="6"`),
   which Gazebo doesn't support, so a pile stays a pile.
 - **Sequence.** The pile settles for 1 s with the ladder raised
@@ -1241,7 +1258,10 @@ Change the bucket in Onshape, re-export, and the test uses the new shape.
 
 Every 2 s it prints how many particles are **in the bin** (inside the bin's
 box, moving with the robot) and **lifted** (above the bed, not in the bin —
-i.e. riding the buckets).
+i.e. riding the buckets), plus the ladder's position and lift force and the
+belt's speed and motor torque. At the end it prints the peak lift force,
+the peak belt torque, and how long the belt spent at its torque limit and
+stalled.
 
 ### What we found
 
@@ -1251,15 +1271,34 @@ i.e. riding the buckets).
 | Creeping forward faster than ~5 mm/s | worse: the robot overruns material |
 | Open scoop → your CAD bucket (with a lid) | ~93–110 in the bin vs 87; up to ~110 riding at once |
 | Starting the ladder overlapping the pile | particles explode outward — always start clear and lower in |
+| Force limits on (311 N lift, 6 N·m belt) vs effectively unlimited vs the old scripted buckets | 160 vs 143 vs 134 in the bin — the same within run-to-run scatter |
+
+With the default settings (ladder at −0.12 m, belt 0.15 m/s, 30 s):
+
+- **Lift: plenty of force.** It holds the ladder with about 64–67 N and
+  peaked at 79 N while digging — a quarter of the 311 N available. The
+  actuators are not the limit.
+- **Belt: the motor is the limit at moments.** Cruising, the belt needs
+  only 0.1–1 N·m. But when a bucket bites into the bed or a particle wedges
+  between a bucket and the ladder, the load spikes: it hit the 6 N·m cap
+  for 7 s of the 30 (stalled for 3 s) and recovered each time. With the cap
+  removed, those spikes reached 32 N·m. So a 6 N·m belt motor driving the
+  roller directly would stall now and then; a gear reduction between the
+  motor and the roller, or a stronger motor, would give it margin. The
+  6 N·m and the direct drive are both still assumptions (section 14), and
+  the spike sizes depend on the coarse 2.4 cm particles.
 
 Particle piles are chaotic, so expect about ±15% between runs; compare
-designs over a few runs. It runs at about 0.15–0.2× real time.
+designs over a few runs. It runs at about 0.15× real time.
 
 ### Limits
 
-Buckets and robot follow scripted paths (no stalling, no tipping, wheels
-don't spin); 2.4 cm spheres are far coarser than real regolith; this is a
-capacity test, not a soil-mechanics model.
+The chassis follows a scripted path (no tipping, wheels don't spin); the
+lift and belt are force-limited but idealised (no motor heating, no
+voltage sag, the two lift actuators perfectly in sync); 2.4 cm spheres are
+far coarser than real regolith, so forces are indicative, not measured.
+It's a capacity test with realistic motor limits, not a soil-mechanics
+model.
 
 ---
 
@@ -1285,7 +1324,7 @@ not a faithful copy of the robot in BP-1.
 | Mass distribution | battery, electronics and bin masses are assumed; wheels take the remainder (affects tipping, braking, wheel loads) |
 | Wheel slip (0.6) | estimated for loose sand, not measured on these wheels in BP-1 |
 | Ground friction (0.8) | from BP-1's internal friction angle; real wheel traction can be lower |
-| Excavator actuators | belt motor is the TSINY TS-30GZ6287 (6 N·m, 50 rpm) from seller listings, assumed direct on the roller; the lift is two PA-14-6-35 actuators, one each side (311 N combined, 50.8 mm/s, 6" stroke), assumed to stay in sync and to push straight along the rails from the CAD pose. The buckets don't load the belt motor, so it never stalls |
+| Excavator actuators | belt motor is the TSINY TS-30GZ6287 (6 N·m, 50 rpm) from seller listings, assumed direct on the roller; the lift is two PA-14-6-35 actuators, one each side (311 N combined, 50.8 mm/s, 6" stroke), assumed to stay in sync and to push straight along the rails from the CAD pose. In Gazebo the buckets don't load the belt motor, so it never stalls; in the MuJoCo test it does (section 13) |
 
 ### Not modelled
 
@@ -1294,8 +1333,8 @@ not a faithful copy of the robot in BP-1.
    with lunar-regolith constants (not measured BP-1 ones), smooth wheels,
    no ruts and no bulldozing.
 2. **No digging in Gazebo.** Buckets scrape a hard floor. The MuJoCo test
-   digs, but with 2.4 cm pebbles (real grains are fractions of a mm) and
-   buckets that never stall.
+   digs, with the lift and belt force-limited, but with 2.4 cm pebbles
+   (real grains are fractions of a mm).
 3. **Ideal electronics:** no battery drain or voltage sag, no motor heating,
    no control lag, no sensor noise, perfect wheel encoders.
 4. **No dust.**
@@ -1462,7 +1501,7 @@ constants at the top of `fix_kinematics.py`.
 | **hardware interface** | ros2_control's link to real or simulated joints |
 | **launch file** | Python script that starts a set of nodes |
 | **link** | a rigid part in a URDF |
-| **mocap body** | MuJoCo body moved by script; pushes things but can't be pushed |
+| **mocap body** | MuJoCo body moved by script; pushes things but can't be pushed (the chassis in the digging test) |
 | **MuJoCo** | fast physics engine, used here for the digging test |
 | **MJCF** | MuJoCo's model format |
 | **joint** | a connection between two links (fixed or moving) |

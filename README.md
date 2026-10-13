@@ -225,7 +225,7 @@ Watch the buckets dig:
 .venv-mujoco/bin/python mujoco_dig/dig_test.py --viewer
 ```
 
-The sim runs at about 0.17× real time. Keep the window open: buckets carry
+The sim runs at about 0.15× real time. Keep the window open: buckets carry
 regolith up the ladder after ~30 s and it reaches the bin after ~1 min; the
 full run takes ~3 min, then the window stays open until you close it. Do not
 use the NVIDIA offload variables with this viewer.
@@ -233,7 +233,7 @@ use the NVIDIA offload variables with this viewer.
 Viewer controls: left-drag to rotate, right-drag to pan, scroll to zoom,
 space to pause.
 
-Run without a window and print the counts:
+Run without a window and print the counts and motor loads:
 
 ```bash
 .venv-mujoco/bin/python mujoco_dig/dig_test.py
@@ -249,5 +249,7 @@ Options:
 | `--advance` | `0.005` | robot creep speed into the regolith (m/s) |
 | `--start-lift` | `0.0` | ladder position before digging starts (m) |
 | `--plunge` | `0.05` | speed the ladder is lowered into the regolith (m/s) |
+| `--lift-force` | `311` | lift actuators' combined force limit (N) |
+| `--belt-torque` | `6` | belt motor torque limit at the drive roller (N·m) |
 | `--radius` | `0.012` | regolith particle radius (m) |
 | `--layers` | `4` | layers of particles in the pit |

@@ -12,9 +12,22 @@ MuJoCo collides with the convex hull of a mesh, which would turn the hollow
 CAD bucket and bin into solid lumps. So each is split into its walls: every
 pair of parallel outer/inner faces in the STL becomes one convex slab.
 
-The buckets follow the belt path exactly (MuJoCo mocap bodies), like a
-chain drive that is strong enough to never stall. Particles are spheres
-with rolling friction, so a pile stays a pile.
+The robot's motors are force-limited like the real ones:
+
+  * Lift: the ladder slides on its rails on a joint driven by a position
+    actuator capped at the two PA-14 actuators' 311 N, lowered at their
+    2"/s. Gravity on the 8 kg ladder and the regolith pushing back on the
+    buckets both load it; past 311 N the ladder stops going down.
+  * Belt: one belt-travel coordinate driven by the TSINY motor model
+    (6 N*m at the drive roller, 50 rpm, self-locking worm gear). Each bucket
+    rides the ladder on its own joints, held to its place on the loop by
+    stiff servos; the force those servos need along the belt is the load
+    the motor feels. Past 6 N*m the belt slows, and it stalls rather than
+    runs backwards.
+
+The chassis is still moved by script (--advance); the wheels aren't
+modelled. Particles are spheres with rolling friction, so a pile stays a
+pile.
 
 Usage (from the repo root):
     .venv-mujoco/bin/python mujoco_dig/dig_test.py            # headless, prints counts
@@ -34,7 +47,8 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PKG = os.path.join(REPO, "src", "lunabotics_model")
 sys.path.insert(0, os.path.join(PKG, "scripts"))
 from fix_kinematics import (  # noqa: E402
-    load_stl_vertices, loop_pose, origin_to_T, rot_w, world_poses)
+    LIFT_EFFORT, LIFT_LOWER, LIFT_UPPER, LIFT_VELOCITY, ROLLER_EFFORT, ROLLER_VELOCITY,
+    load_stl_vertices, loop_pose, origin_to_T, world_poses)
 
 ROLLER_RADIUS = 0.047
 ROLLER_LENGTH = 0.26
@@ -48,6 +62,20 @@ PIT_LEFT = (-0.13, 0.17)
 # stands on, so lowering the ladder digs into a bed rather than a heap.
 PIT_DEPTH = 0.10
 GROUND_HALF_SIZE = 3.0  # m, extent of the surface around the pit
+# Servo gains. The lift servo stands in for the actuators' lead screws; the
+# bucket servos for the belt holding each bucket at its place on the loop.
+LIFT_KP, LIFT_KV = 50000.0, 3000.0      # N/m, N*s/m
+BUCKET_KP, BUCKET_KV = 20000.0, 150.0   # N/m, N*s/m along / across the ladder
+BUCKET_ROT_KP, BUCKET_ROT_KV = 30.0, 0.3  # N*m/rad, N*m*s/rad about the shafts
+# Belt drive model: speed loop gain, and the moving mass of belt + buckets
+# as seen along the belt (sets how fast the belt speeds up and slows down).
+BELT_GAIN = 50.0    # N*m per (m/s) of belt speed error
+BELT_MASS = 3.0     # kg
+LOAD_FILTER = 0.02  # s, smoothing of the belt load the motor sees
+# Contact groups: buckets and rollers touch only the regolith (they'd
+# otherwise snag on the pit edges and the bin, which they clear on the robot).
+REGOLITH_BITS = 'contype="1" conaffinity="3"'
+DIGGER_BITS = 'contype="2" conaffinity="0"'
 
 
 def shell_slabs(tris, max_thickness=MAX_WALL):
@@ -132,6 +160,11 @@ def load_geometry():
         n = stack.pop()
         on_ladder.add(n)
         stack += [j.find("child").get("link") for j in children.get(n, [])]
+    def mass(name):
+        m = links[name].find("inertial/mass")
+        return float(m.get("value")) if m is not None else 0.0
+    bucket_mass = mass(belt["buckets"][0])
+    ladder_mass = sum(mass(n) for n in on_ladder) - len(belt["buckets"]) * bucket_mass
     visuals = []
     for name, link in links.items():
         if name in belt["buckets"]:
@@ -150,7 +183,7 @@ def load_geometry():
     return dict(L=L, belt=belt, visuals=visuals, bucket_walls=shell_slabs(bucket_tris),
                 bin_walls=shell_slabs(bin_tris), bin=(bin_pts.min(0), bin_pts.max(0)),
                 rollers=[W["rod"][:3, 3], W["rod_1"][:3, 3]], shaft_axis=ew,
-                pit_centre=W["rod_1"][:2, 3])
+                pit_centre=W["rod_1"][:2, 3], bucket_mass=bucket_mass, ladder_mass=ladder_mass)
 
 
 def quat(R):
@@ -163,21 +196,29 @@ def fmt(v):
     return " ".join(f"{x:.6g}" for x in v)
 
 
-def build_xml(g, radius, layers, seed, pit_depth=PIT_DEPTH):
-    # Ladder, rollers and bin are built in the robot frame and carried by one
-    # mocap body ("chassis"), so --advance can drive the whole robot forward.
+def build_xml(g, radius, layers, seed, lift_force, pit_depth=PIT_DEPTH):
+    # The chassis (bin, frame) is a mocap body moved by script, so --advance
+    # can drive the robot forward. The ladder hangs off it on the lift joint,
+    # and the buckets hang off the ladder on their belt joints.
     L = g["L"]
+    Linv = np.linalg.inv(L)
 
-    chassis = []
+    def in_ladder(T):
+        """A robot-frame pose, expressed in the ladder frame."""
+        return Linv @ T
+
+    chassis, ladder = [], []
     # Rollers: cylinders on the shafts.
     ax = g["shaft_axis"]
     Rcyl = np.column_stack([np.cross(ax, [0, 0, 1.0]), np.zeros(3), ax])
     Rcyl[:, 0] /= np.linalg.norm(Rcyl[:, 0])
     Rcyl[:, 1] = np.cross(Rcyl[:, 2], Rcyl[:, 0])
-    ladder = []  # rollers ride the lift, so they get their own body
     for i, c in enumerate(g["rollers"]):
+        T = np.eye(4)
+        T[:3, :3], T[:3, 3] = Rcyl, c
+        T = in_ladder(T)
         ladder.append(f'<geom name="roller_{i}" type="cylinder" size="{ROLLER_RADIUS} {ROLLER_LENGTH / 2}" '
-                      f'pos="{fmt(c)}" quat="{fmt(quat(Rcyl))}" rgba="0 0 0 0"/>')
+                      f'pos="{fmt(T[:3, 3])}" quat="{fmt(quat(T[:3, :3]))}" {DIGGER_BITS} rgba="0 0 0 0"/>')
 
     # Bin: the CAD hopper's walls.
     assets = []
@@ -188,20 +229,45 @@ def build_xml(g, radius, layers, seed, pit_depth=PIT_DEPTH):
     # The rest of the robot: CAD meshes, display only (no collisions, no mass).
     for i, v in enumerate(g["visuals"]):
         assets.append(f'<mesh name="cad_{i}" file="{v["file"]}" inertia="shell"/>')
-        geom = (f'<geom type="mesh" mesh="cad_{i}" contype="0" conaffinity="0" group="1" '
-                f'pos="{fmt(v["T"][:3, 3])}" quat="{fmt(quat(v["T"][:3, :3]))}" rgba="{v["rgba"]}"/>')
+        T = in_ladder(v["T"]) if v["ladder"] else v["T"]
+        geom = (f'<geom type="mesh" mesh="cad_{i}" contype="0" conaffinity="0" group="1" mass="0" '
+                f'pos="{fmt(T[:3, 3])}" quat="{fmt(quat(T[:3, :3]))}" rgba="{v["rgba"]}"/>')
         (ladder if v["ladder"] else chassis).append(geom)
-    # base_link sits on the ground, so the robot's frame is the world frame at start.
-    parts = [f'<body name="chassis" mocap="true">{"".join(chassis)}</body>',
-             f'<body name="ladder" mocap="true">{"".join(ladder)}</body>']
 
-    # Buckets: mocap bodies built from the CAD bucket's walls.
+    # Buckets: the CAD bucket's walls, on three joints in the ladder frame
+    # (x along the ladder, y across it, z along the shafts), like the
+    # bucket_N_belt_u / _v / _rot joints in the URDF.
     for i, w in enumerate(g["bucket_walls"]):
         assets.append(f'<mesh name="bucket_wall_{i}" vertex="{fmt(w.flatten())}"/>')
+    pts = np.vstack(g["bucket_walls"])
+    lo, hi = pts.min(0), pts.max(0)
+    size = hi - lo
+    m = g["bucket_mass"]
+    inertia = m / 12 * np.array([size[1] ** 2 + size[2] ** 2, size[0] ** 2 + size[2] ** 2, size[0] ** 2 + size[1] ** 2])
+    actuators = []
+    buckets = []
     for b in g["belt"]["buckets"]:
-        geoms = "".join(f'<geom type="mesh" mesh="bucket_wall_{i}" rgba="0.9 0.55 0.1 1"/>'
+        geoms = "".join(f'<geom type="mesh" mesh="bucket_wall_{i}" mass="0" {DIGGER_BITS} rgba="0.9 0.55 0.1 1"/>'
                         for i in range(len(g["bucket_walls"])))
-        parts.append(f'<body name="{b}" mocap="true">{geoms}</body>')
+        buckets.append(
+            f'<body name="{b}"><inertial pos="{fmt((lo + hi) / 2)}" mass="{m:.4g}" diaginertia="{fmt(inertia)}"/>'
+            f'<joint name="{b}_u" type="slide" axis="1 0 0"/><joint name="{b}_v" type="slide" axis="0 1 0"/>'
+            f'<joint name="{b}_rot" type="hinge" axis="0 0 1"/>{geoms}</body>')
+        actuators += [f'<position name="{b}_u" joint="{b}_u" kp="{BUCKET_KP}" kv="{BUCKET_KV}"/>',
+                      f'<position name="{b}_v" joint="{b}_v" kp="{BUCKET_KP}" kv="{BUCKET_KV}"/>',
+                      f'<position name="{b}_rot" joint="{b}_rot" kp="{BUCKET_ROT_KP}" kv="{BUCKET_ROT_KV}"/>']
+
+    # Ladder body: frame L, sliding along its own x axis (up the rails).
+    ladder_com = (np.array([0.0, 0.0, 0.0]) + Linv[:3, :3] @ (g["rollers"][0] - g["rollers"][1])) / 2
+    lift_joint = (f'<joint name="lift" type="slide" axis="1 0 0" range="{LIFT_LOWER} {LIFT_UPPER}" '
+                  f'limited="true" damping="50"/>')
+    ladder_body = (f'<body name="ladder" pos="{fmt(L[:3, 3])}" quat="{fmt(quat(L[:3, :3]))}">'
+                   f'<inertial pos="{fmt(ladder_com)}" mass="{g["ladder_mass"]:.4g}" diaginertia="0.3 0.3 0.05"/>'
+                   f'{lift_joint}{"".join(ladder)}{"".join(buckets)}</body>')
+    actuators.insert(0, f'<position name="lift" joint="lift" kp="{LIFT_KP}" kv="{LIFT_KV}" '
+                        f'forcelimited="true" forcerange="{-lift_force} {lift_force}"/>')
+    # base_link sits on the ground, so the robot's frame is the world frame at start.
+    parts = [f'<body name="chassis" mocap="true">{"".join(chassis)}{ladder_body}</body>']
 
     # Ground: the surface the robot stands on (z = 0) with the pit cut out
     # of it. Four slabs around the pit, from the pit floor up to the surface;
@@ -240,7 +306,7 @@ def build_xml(g, radius, layers, seed, pit_depth=PIT_DEPTH):
   <default>
     <geom friction="0.8 0.01 0.001" solref="0.004 1"/>
     <default class="regolith">
-      <geom condim="6" density="1500" friction="0.9 0.02 0.002" rgba="0.55 0.5 0.45 1"/>
+      <geom condim="6" density="1500" friction="0.9 0.02 0.002" rgba="0.55 0.5 0.45 1" {REGOLITH_BITS}/>
     </default>
   </default>
   <asset>{''.join(assets)}</asset>
@@ -249,36 +315,90 @@ def build_xml(g, radius, layers, seed, pit_depth=PIT_DEPTH):
     <geom name="pit_floor" type="plane" size="5 5 0.1" pos="0 0 {-pit_depth}" rgba="0.5 0.47 0.43 1"/>
     {''.join(parts)}
   </worldbody>
+  <actuator>{''.join(actuators)}</actuator>
 </mujoco>"""
     return xml, n
 
 
 class Robot:
-    """Drives the chassis forward and the buckets round the belt loop."""
+    """Drives the chassis by script; runs the lift and belt through their
+    force-limited motors."""
 
-    def __init__(self, model, g):
-        self.L = g["L"]
+    def __init__(self, model, g, belt_torque):
         b = g["belt"]
         self.length, self.radius = b["shaft_distance"], b["pitch_radius"]
         self.start = np.array(b["start_positions"])
-        self.ids = [model.body(name).mocapid[0] for name in b["buckets"]]
+        self.buckets = b["buckets"]
+        self.act = {name: model.actuator(name).id for name in
+                    ["lift"] + [f"{k}_{j}" for k in self.buckets for j in ("u", "v", "rot")]}
         self.chassis = model.body("chassis").mocapid[0]
-        self.ladder = model.body("ladder").mocapid[0]
+        self.lift_qpos = model.jnt_qposadr[model.joint("lift").id]
         # Forward = toward the excavator, perpendicular to the wheel axles.
         self.forward = np.cross(g["shaft_axis"], [0, 0, 1.0])
         self.forward /= np.linalg.norm(self.forward)
         self.origin = np.zeros(3)
+        self.belt_torque = belt_torque
+        self.s = 0.0           # belt travel (m)
+        self.v = 0.0           # belt speed (m/s)
+        self.load = 0.0        # torque the belt needs at the drive roller (N*m), filtered
+        self.motor = 0.0       # torque the belt motor gives (N*m)
+        self.lift_target = 0.0
+        # Running totals for the summary.
+        self.peak_lift, self.peak_belt, self.limited_time, self.stalled_time = 0.0, 0.0, 0.0, 0.0
 
-    def set(self, data, travel, advance, lift):
-        base = self.origin + advance * self.forward
-        ladder = base + lift * self.L[:3, 0]  # the lift slides the ladder along its own u axis
-        data.mocap_pos[self.chassis] = base
-        data.mocap_pos[self.ladder] = ladder
-        for mid, s0 in zip(self.ids, self.start):
-            u, v, th = loop_pose(s0 + travel, self.length, self.radius)
-            T = self.L @ np.block([[rot_w(th), np.array([[u], [v], [0.0]])], [np.zeros((1, 3)), np.ones((1, 1))]])
-            data.mocap_pos[mid] = T[:3, 3] + ladder
-            data.mocap_quat[mid] = quat(T[:3, :3])
+    def set_targets(self, data):
+        """Point the bucket servos at their places on the loop at travel s."""
+        for k, s0 in zip(self.buckets, self.start):
+            u, v, th = loop_pose(s0 + self.s, self.length, self.radius)
+            data.ctrl[self.act[f"{k}_u"]] = u
+            data.ctrl[self.act[f"{k}_v"]] = v
+            data.ctrl[self.act[f"{k}_rot"]] = th
+
+    def belt_load(self, data):
+        """Torque at the drive roller needed to keep the buckets moving:
+        the bucket servo forces along the belt (work per metre of travel)
+        times the roller radius."""
+        F, h = 0.0, 1e-4
+        for k, s0 in zip(self.buckets, self.start):
+            d = (np.array(loop_pose(s0 + self.s + h, self.length, self.radius))
+                 - np.array(loop_pose(s0 + self.s - h, self.length, self.radius))) / (2 * h)
+            f = np.array([data.actuator_force[self.act[f"{k}_{j}"]] for j in ("u", "v", "rot")])
+            F += f @ d
+        return F * self.radius
+
+    def step(self, model, data, belt_speed, advance, lift):
+        dt = model.opt.timestep
+        data.mocap_pos[self.chassis] = self.origin + advance * self.forward
+        # Lift: the target moves no faster than the actuators (2"/s).
+        step = LIFT_VELOCITY * dt
+        self.lift_target += np.clip(lift - self.lift_target, -step, step)
+        data.ctrl[self.act["lift"]] = self.lift_target
+        # Belt: speed loop on the motor, capped at its torque; the worm gear
+        # can't be back-driven, so the belt never runs against the motor.
+        a = dt / LOAD_FILTER
+        self.load += a * (self.belt_load(data) - self.load)
+        v_cmd = np.clip(belt_speed, -ROLLER_VELOCITY * self.radius, ROLLER_VELOCITY * self.radius)
+        self.motor = float(np.clip(self.load + BELT_GAIN * (v_cmd - self.v), -self.belt_torque, self.belt_torque))
+        self.v += (self.motor - self.load) / self.radius / BELT_MASS * dt
+        if v_cmd >= 0:
+            self.v = min(max(self.v, 0.0), v_cmd)
+        else:
+            self.v = max(min(self.v, 0.0), v_cmd)
+        self.s += self.v * dt
+        self.set_targets(data)
+        mujoco.mj_step(model, data)
+        self.peak_lift = max(self.peak_lift, abs(self.lift_force(data)))
+        self.peak_belt = max(self.peak_belt, abs(self.motor))
+        if v_cmd != 0 and abs(self.motor) >= self.belt_torque * 0.999:
+            self.limited_time += dt
+            if self.v == 0.0:
+                self.stalled_time += dt
+
+    def lift_pos(self, data):
+        return float(data.qpos[self.lift_qpos])
+
+    def lift_force(self, data):
+        return float(data.actuator_force[self.act["lift"]])
 
 
 def counts(model, data, g, n, pile_top, robot):
@@ -297,7 +417,12 @@ def main():
     ap.add_argument("--speed", type=float, default=0.15, help="belt speed in m/s (+ = dig direction)")
     ap.add_argument("--lift", type=float, default=-0.12, help="dig depth: ladder position on its rails (m, + = up)")
     ap.add_argument("--start-lift", type=float, default=0.0, help="ladder position while the pile settles (m)")
-    ap.add_argument("--plunge", type=float, default=0.05, help="speed the ladder is lowered into the pile (m/s); the PA-14 lift actuator does 0.05")
+    ap.add_argument("--plunge", type=float, default=0.05, help="speed the ladder is lowered into the pile (m/s); "
+                    f"the lift can't go faster than the PA-14's {LIFT_VELOCITY:.4f}")
+    ap.add_argument("--lift-force", type=float, default=LIFT_EFFORT,
+                    help=f"lift actuators' combined force limit (N; default {LIFT_EFFORT:.0f}, 2 x PA-14-6-35)")
+    ap.add_argument("--belt-torque", type=float, default=ROLLER_EFFORT,
+                    help=f"belt motor torque limit at the drive roller (N*m; default {ROLLER_EFFORT:.0f}, TSINY)")
     ap.add_argument("--advance", type=float, default=0.005, help="robot creep speed into the pile (m/s)")
     ap.add_argument("--radius", type=float, default=0.012, help="regolith particle radius (m)")
     ap.add_argument("--layers", type=int, default=4, help="layers of particles in the pile")
@@ -306,28 +431,34 @@ def main():
     args = ap.parse_args()
 
     g = load_geometry()
-    xml, n = build_xml(g, args.radius, args.layers, args.seed)
+    xml, n = build_xml(g, args.radius, args.layers, args.seed, args.lift_force)
     if args.save_xml:
         with open(args.save_xml, "w") as f:
             f.write(xml)
     model = mujoco.MjModel.from_xml_string(xml)
     data = mujoco.MjData(model)
-    belt = Robot(model, g)
-    belt.set(data, 0.0, 0.0, args.start_lift)
+    belt = Robot(model, g, args.belt_torque)
+    belt.lift_target = args.start_lift
+    data.qpos[belt.lift_qpos] = args.start_lift
+    data.ctrl[belt.act["lift"]] = args.start_lift
+    belt.set_targets(data)
+    for k, s0 in zip(belt.buckets, belt.start):  # start the buckets on their targets
+        for j, val in zip(("u", "v", "rot"), loop_pose(s0, belt.length, belt.radius)):
+            data.qpos[model.jnt_qposadr[model.joint(f"{k}_{j}").id]] = val
     mujoco.mj_forward(model, data)
 
     settle = 1.0  # let the pile settle before the belt starts
     pile_top = args.radius * 2 * args.layers - PIT_DEPTH
     print(f"{n} particles of {args.radius * 200:.1f} cm, belt {args.speed:+.2f} m/s, "
-          f"lift {args.lift:+.3f} m, advance {args.advance * 1000:.0f} mm/s, {args.duration:.0f} s", flush=True)
+          f"lift {args.lift:+.3f} m, advance {args.advance * 1000:.0f} mm/s, {args.duration:.0f} s; "
+          f"limits: lift {args.lift_force:.0f} N, belt {args.belt_torque:.1f} N*m", flush=True)
 
     def step_once():
         t = data.time
         running = max(0.0, t - settle)
         # Plunge: lower the ladder from start_lift into the pile once the belt runs.
         lift = max(args.lift, args.start_lift - running * args.plunge)
-        belt.set(data, running * args.speed, running * args.advance, lift)
-        mujoco.mj_step(model, data)
+        belt.step(model, data, args.speed if running > 0 else 0.0, running * args.advance, lift)
 
     report_every, next_report = 2.0, settle
     wall0 = time.time()
@@ -339,7 +470,9 @@ def main():
         in_bin, lifted = counts(model, data, g, n, pile_top, belt)
         best_bin = max(best_bin, in_bin)
         rtf = data.time / max(time.time() - wall0, 1e-6)
-        print(f"t={data.time:5.1f}s  in bin {in_bin:4d}  lifted {lifted:4d}  (sim speed {rtf:.2f}x real time)", flush=True)
+        print(f"t={data.time:5.1f}s  in bin {in_bin:4d}  lifted {lifted:4d}  "
+              f"ladder {belt.lift_pos(data):+.3f} m, lift {belt.lift_force(data):+5.0f} N  "
+              f"belt {belt.v:.3f} m/s, {belt.motor:+5.2f} N*m  (sim speed {rtf:.2f}x real time)", flush=True)
 
     if args.viewer:
         from mujoco import viewer
@@ -358,6 +491,7 @@ def main():
                       else f"stopped early at t={data.time:.1f}s (window closed)")
             print(f"{status}: {in_bin} of {n} particles in the bin (max {max(best_bin, in_bin)}), "
                   f"{lifted} still on buckets", flush=True)
+            print(motor_summary(belt, data), flush=True)
             if data.time >= end:
                 print("close the window to exit", flush=True)
             while v.is_running():  # leave the final state on screen
@@ -373,6 +507,13 @@ def main():
                 next_report += report_every
     in_bin, lifted = counts(model, data, g, n, pile_top, belt)
     print(f"done: {in_bin} of {n} particles in the bin (max {max(best_bin, in_bin)}), {lifted} still on buckets", flush=True)
+    print(motor_summary(belt, data), flush=True)
+
+
+def motor_summary(belt, data):
+    return (f"motors: ladder reached {belt.lift_pos(data):+.3f} m, lift force peak {belt.peak_lift:.0f} N; "
+            f"belt torque peak {belt.peak_belt:.2f} N*m, at its limit for {belt.limited_time:.1f} s "
+            f"(stalled {belt.stalled_time:.1f} s), belt travelled {belt.s:.2f} m")
 
 
 if __name__ == "__main__":
