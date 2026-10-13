@@ -239,6 +239,8 @@ Run the belt motor at its full 50 rpm:
 .venv-mujoco/bin/python mujoco_dig/dig_test.py --viewer --speed 0.254
 ```
 
+Change the pit size, servo gains or belt drive model: edit `mujoco_dig/settings.py`.
+
 Run without a window and print the counts and motor loads:
 
 ```bash

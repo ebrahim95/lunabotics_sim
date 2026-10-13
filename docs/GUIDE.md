@@ -629,7 +629,12 @@ lunabotics_sim/
 ├── .gitignore                    ignores build/, install/, log/, .venv-mujoco/
 ├── .venv-mujoco/                 Python environment for the MuJoCo test (not in git)
 ├── mujoco_dig/
-│   ├── dig_test.py               MuJoCo bucket digging test (section 13)
+│   ├── dig_test.py               MuJoCo digging test: options, run loop, viewer (section 13)
+│   ├── settings.py               its paths and tunable numbers
+│   ├── geometry.py               step 1: reads the robot (URDF, CAD meshes, belt)
+│   ├── scene.py                  step 2: builds the MuJoCo scene
+│   ├── robot.py                  step 3: runs the chassis, lift and belt motor
+│   ├── measure.py                step 4: counts regolith, sums up motor loads
 │   └── requirements.txt          pinned Python packages for it (section 13)
 ├── old_urdf/                     first Onshape export (chassis only, ROS 1) — unused
 └── src/lunabotics_model/         the ROS 2 package
@@ -1220,6 +1225,47 @@ the `uv pip install ... -r mujoco_dig/requirements.txt` command again, and
 re-check the results. The environment's own Python is
 `.venv-mujoco/bin/python`, which is why the commands start with it; the
 system `python3` can't import `mujoco` at all.
+
+### How the code is organised
+
+The test is split into files by job, run in this order:
+
+```
+dig_test.py  main(): reads the options, then
+   │
+   ├─► geometry.py   load_geometry()   step 1: read the robot
+   │     URDF + CAD meshes + belt layout → ladder frame, bucket and bin
+   │     walls (shell_slabs), rollers, pit position, masses
+   │
+   ├─► scene.py      build_xml()       step 2: build the MuJoCo scene
+   │     → MJCF text: chassis (mocap), ladder on the lift joint, buckets on
+   │     their joints, servos/actuators, ground with the pit, regolith spheres
+   │
+   ├─► robot.py      Robot.step()      step 3: run it, every 2 ms step
+   │     chassis forward · lift target (≤ 2"/s) · belt motor model
+   │     (belt_load → motor torque ≤ limit → belt speed) · bucket targets
+   │     → mujoco.mj_step()
+   │
+   └─► measure.py    counts(), motor_summary()   step 4: measure
+         every 2 s: particles in the bin and on the buckets; at the end:
+         peak lift force, peak belt torque, time at the limit and stalled
+```
+
+| File | What's in it | Change it to… |
+|---|---|---|
+| `settings.py` | paths; pit size and depth; servo gains; belt drive model (gain, moving mass, load smoothing); contact groups | resize the pit, or tune how stiff the buckets and lift are |
+| `geometry.py` | `shell_slabs()`, `load_geometry()` | change how the CAD parts are read |
+| `scene.py` | `quat()`, `fmt()`, `build_xml()` | add or change parts of the scene, regolith properties |
+| `robot.py` | `Robot`: `step()`, `belt_load()`, `set_targets()` | change how the motors behave |
+| `measure.py` | `counts()`, `motor_summary()` | change what is measured |
+| `dig_test.py` | `main()`: options, start-up, run loop, viewer | add options |
+
+The motor limits (311 N lift, 6 N·m and 50 rpm belt, 2"/s lift) aren't in
+`settings.py`: every file imports them from
+`src/lunabotics_model/scripts/fix_kinematics.py`, the same place the
+Gazebo model gets them, so the two simulations always agree.
+`settings.py` also puts that scripts folder on Python's path, which is why
+the other files import it before `fix_kinematics`.
 
 ### What is in the scene
 
