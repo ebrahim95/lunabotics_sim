@@ -215,8 +215,8 @@ Set up once:
 
 ```bash
 cd ~/Desktop/lunabotics_sim
-uv venv .venv-mujoco
-uv pip install --python .venv-mujoco/bin/python mujoco numpy pyyaml
+uv venv --python 3.13 .venv-mujoco
+uv pip install --python .venv-mujoco/bin/python -r mujoco_dig/requirements.txt
 ```
 
 Watch the buckets dig:

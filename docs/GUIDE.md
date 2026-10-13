@@ -629,7 +629,8 @@ lunabotics_sim/
 ├── .gitignore                    ignores build/, install/, log/, .venv-mujoco/
 ├── .venv-mujoco/                 Python environment for the MuJoCo test (not in git)
 ├── mujoco_dig/
-│   └── dig_test.py               MuJoCo bucket digging test (section 13)
+│   ├── dig_test.py               MuJoCo bucket digging test (section 13)
+│   └── requirements.txt          pinned Python packages for it (section 13)
 ├── old_urdf/                     first Onshape export (chassis only, ROS 1) — unused
 └── src/lunabotics_model/         the ROS 2 package
     ├── package.xml               package name and dependencies
@@ -1191,6 +1192,34 @@ buckets scoop and deliver to the bin?** It runs outside ROS, in the
 **MuJoCo** physics engine, which handles piles of touching particles far
 faster than Gazebo (Gazebo slowed below 1% of real time with a few hundred
 particles).
+
+### Its Python environment
+
+The test runs in its own *virtual environment*, `.venv-mujoco/`: a folder
+with its own Python and packages, separate from the system Python that ROS
+uses. Ubuntu refuses `pip install` into its system Python (it's managed by
+apt, the "externally-managed-environment" error), and installing there
+could clash with the package versions ROS depends on. Everything MuJoCo
+needs lives in that one folder; delete it and it's gone. It's in
+`.gitignore`, so everyone makes their own with the two `uv` commands in the
+README.
+
+`mujoco_dig/requirements.txt` pins the exact versions the test was run
+with, so everyone gets the same physics:
+
+| Package | Version |
+|---|---|
+| Python | 3.13 (set by `uv venv --python 3.13`) |
+| mujoco | 3.15.0 |
+| numpy | 2.5.4 |
+| pyyaml | 6.0.3 |
+
+A different MuJoCo version can change contact behaviour, and with it the
+digging counts. To upgrade, change the versions in `requirements.txt`, run
+the `uv pip install ... -r mujoco_dig/requirements.txt` command again, and
+re-check the results. The environment's own Python is
+`.venv-mujoco/bin/python`, which is why the commands start with it; the
+system `python3` can't import `mujoco` at all.
 
 ### What is in the scene
 
