@@ -783,6 +783,25 @@ wall instead of spinning forever, and pivoting on the spot needs wheel slip
 (below) to work at all. Edit the
 constants at the top of `fix_kinematics.py` if you know better masses.
 
+**Wheel motor speed.** The 57BLR70-24-02-HG50 is a brushless motor with a
+50:1 gearbox:
+
+| | Speed |
+|---|---|
+| Brushless motor itself | 3500 rpm rated |
+| After the 50:1 gearbox, i.e. at the wheel | 70 rpm rated (3500 ÷ 50) |
+
+The gearbox trades speed for torque: the wheel turns 50 times slower than
+the motor, with about 50 times the torque (17.6 N·m rated at the wheel).
+
+In the simulation each wheel is capped at 70 rpm (`WHEEL_VELOCITY = 7.33
+rad/s`), about 1.3 m/s on the 0.361 m wheels. The drive controller caps
+the robot at 1.0 m/s, so driving straight the wheels never go above about
+53 rpm; spinning on the spot can push one side closer to 70. Teleop's
+default 0.5 m/s is about 26.5 rpm. The real motor can probably spin a bit
+faster than 70 rpm with no load, but its no-load speed isn't on the
+datasheet, so the simulation uses the rated 70 rpm.
+
 **All motor and actuator limits** set by `fix_kinematics.py` (edit the
 named constants at its top; regenerate as in the README):
 
