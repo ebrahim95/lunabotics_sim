@@ -1041,6 +1041,26 @@ hit their torque limit. "Key speeds" are what the next driving key will
 use. The block redraws by moving the cursor back up over itself, and each
 line is cut to the terminal's width so it never wraps.
 
+**What rpm and rad/s mean.** **rpm** is *revolutions per minute*: how many
+full turns something makes in one minute. "Wheels L +26.5 rpm" means the
+left wheels turn 26.5 full turns every minute; "Belt +29 rpm" means the
+drive roller that moves the belt turns 29 times a minute.
+
+To relate it to the robot's speed: each wheel is 0.361 m across, so one
+turn rolls it forward about 1.13 m (its circumference, π × 0.361). At
+26.5 turns a minute that's 26.5 × 1.13 ≈ 30 m per minute ≈ **0.5 m/s**,
+the speed you commanded. The motor limits are in rpm too: the drive
+motors top out at 70 rpm (about 1.3 m/s) and the belt motor at 50 rpm.
+
+**rad/s** (radians per second) measures the same thing and is the unit ROS
+uses. One full turn is 2π ≈ 6.28 radians, so
+
+> rpm = rad/s × 60 ÷ 6.28  (e.g. 2.77 rad/s ≈ 26.5 rpm)
+
+The teleop shows rpm because it's easier to compare with the motor
+datasheets, and sends rad/s to the controllers because that's what ROS
+expects.
+
 **Driving keys** form a 3×3 square with stop in the middle:
 
 ```
@@ -1432,8 +1452,10 @@ constants at the top of `fix_kinematics.py`.
 | **odometry** | position estimate from wheel motion |
 | **package** | a unit of ROS code with `package.xml` |
 | **parameter** | a node setting, usually from YAML |
+| **rad/s** | radians per second; one full turn is 2π ≈ 6.28 rad |
 | **PRIME offload** | running an app on the NVIDIA GPU of a hybrid laptop |
 | **real-time factor (RTF)** | sim speed ÷ real speed (1.0 = real time) |
+| **rpm** | revolutions (full turns) per minute; rpm = rad/s × 60 ÷ 2π |
 | **RViz** | 3D visualisation of ROS data |
 | **SDF** | Gazebo's native model format |
 | **sim time** | the simulation's clock, published on `/clock` |
