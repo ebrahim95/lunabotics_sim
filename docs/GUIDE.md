@@ -636,7 +636,6 @@ lunabotics_sim/
 │   ├── robot.py                  step 3: runs the chassis, lift and belt motor
 │   ├── measure.py                step 4: counts regolith, sums up motor loads
 │   └── requirements.txt          pinned Python packages for it (section 13)
-├── old_urdf/                     first Onshape export (chassis only, ROS 1) — unused
 └── src/lunabotics_model/         the ROS 2 package
     ├── package.xml               package name and dependencies
     ├── CMakeLists.txt            what gets installed by colcon
