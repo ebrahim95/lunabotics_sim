@@ -662,7 +662,7 @@ lunabotics_sim/
     ├── launch/
     │   ├── gazebo.launch.py      full simulation
     │   └── display.launch.py     RViz-only viewer
-    └── rviz/                     (empty)
+    └── rviz/                     (empty; .gitkeep keeps it in git so colcon can install it)
 ```
 
 **GENERATED** files are rewritten by the scripts. Never edit them by hand —
