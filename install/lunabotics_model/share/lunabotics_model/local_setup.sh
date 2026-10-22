@@ -1,1 +1,0 @@
-/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model/ament_cmake_environment_hooks/local_setup.sh
