@@ -1,0 +1,7 @@
+# Python packages for the MuJoCo digging test (mujoco_dig/dig_test.py).
+# Tested with Python 3.13. Install into the .venv-mujoco environment:
+#   uv venv --python 3.13 .venv-mujoco
+#   uv pip install --python .venv-mujoco/bin/python -r mujoco_dig/requirements.txt
+mujoco==3.15.0
+numpy==2.5.4
+pyyaml==6.0.3

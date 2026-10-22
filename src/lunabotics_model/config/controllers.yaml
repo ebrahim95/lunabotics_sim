@@ -1,0 +1,59 @@
+# velocity_controllers/position_controllers were removed from ros2_controllers;
+# ForwardCommandController with interface_name is the replacement and keeps
+# the same /<controller>/commands (std_msgs/Float64MultiArray) topic.
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+
+    diff_drive_controller:
+      type: diff_drive_controller/DiffDriveController
+
+    belt_velocity_controller:
+      type: forward_command_controller/ForwardCommandController
+
+    excavator_lift_controller:
+      type: forward_command_controller/ForwardCommandController
+
+    # Joints + params come from the generated config/bucket_controller.yaml
+    # (passed to the spawner), driven by belt_animator.py.
+    bucket_position_controller:
+      type: forward_command_controller/ForwardCommandController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+# Skid-steer drive from /cmd_vel (geometry_msgs/TwistStamped), e.g.
+# teleop_twist_keyboard with stamped:=true. Forward is toward the excavator.
+diff_drive_controller:
+  ros__parameters:
+    left_wheel_names: [revolute_1_1, revolute_1_2]
+    right_wheel_names: [revolute_1, revolute_1_3]
+    wheel_separation: 0.598   # m, between left and right wheel centres
+    # Four-wheel skid steer slips sideways when turning, so it turns as if
+    # the wheels were further apart; measured in Gazebo (commanded vs actual yaw).
+    wheel_separation_multiplier: 2.1
+    wheel_radius: 0.1805      # m
+    base_frame_id: base_link
+    odom_frame_id: odom
+    enable_odom_tf: true
+    # teleop_twist_keyboard sends one message per key press, so keep the last
+    # command until a new one arrives (press k to stop), like the main repo.
+    cmd_vel_timeout: 3600.0   # s of sim time
+    linear.x.max_velocity: 1.0
+    angular.z.max_velocity: 2.0
+
+# Spins the top (drive) roller of the excavator ladder; the buckets follow it.
+belt_velocity_controller:
+  ros__parameters:
+    joints:
+      - drive_roller_joint
+    interface_name: velocity
+
+# Slides the ladder along its rails; + is up, limits are in the URDF.
+excavator_lift_controller:
+  ros__parameters:
+    joints:
+      - excavator_lift
+    interface_name: position
+
+# No joint list: broadcasts every joint declared in <ros2_control>.

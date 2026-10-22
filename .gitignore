@@ -1,0 +1,14 @@
+# colcon workspace output
+build/
+install/
+log/
+
+# Python
+__pycache__/
+*.pyc
+
+# MuJoCo test environment (uv venv)
+.venv-mujoco/
+
+# MuJoCo error log
+MUJOCO_LOG.TXT
