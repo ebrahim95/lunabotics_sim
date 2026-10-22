@@ -1,0 +1,60 @@
+[0.032s] Invoking command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model -DCMAKE_INSTALL_PREFIX=/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model
+[0.181s] -- The C compiler identification is GNU 11.5.0
+[0.286s] -- The CXX compiler identification is GNU 11.5.0
+[0.302s] -- Detecting C compiler ABI info
+[0.374s] -- Detecting C compiler ABI info - done
+[0.381s] -- Check for working C compiler: /usr/bin/cc - skipped
+[0.381s] -- Detecting C compile features
+[0.382s] -- Detecting C compile features - done
+[0.389s] -- Detecting CXX compiler ABI info
+[0.463s] -- Detecting CXX compiler ABI info - done
+[0.471s] -- Check for working CXX compiler: /usr/bin/c++ - skipped
+[0.471s] -- Detecting CXX compile features
+[0.471s] -- Detecting CXX compile features - done
+[0.478s] -- Found ament_cmake: 2.5.5 (/opt/ros/jazzy/share/ament_cmake/cmake)
+[0.607s] -- Found Python3: /usr/bin/python3 (found version "3.12.3") found components: Interpreter 
+[0.740s] -- Found ament_lint_auto: 0.17.4 (/opt/ros/jazzy/share/ament_lint_auto/cmake)
+[0.831s] -- Added test 'flake8' to check Python code syntax and style conventions
+[0.831s] -- Configured 'flake8' exclude dirs and/or files: 
+[0.832s] -- Added test 'lint_cmake' to check CMake code style
+[0.833s] -- Added test 'pep257' to check Python code against some of the docstring style conventions in PEP 257
+[0.834s] -- Added test 'xmllint' to check XML markup files
+[0.836s] -- Configuring done (0.8s)
+[0.838s] -- Generating done (0.0s)
+[0.840s] -- Build files have been written to: /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model
+[0.843s] Invoked command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake /home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model -DCMAKE_INSTALL_PREFIX=/home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model
+[0.844s] Invoking command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model -- -j8 -l8
+[0.874s] Invoked command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --build /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model -- -j8 -l8
+[0.881s] Invoking command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model
+[0.887s] -- Install configuration: ""
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/urdf
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/urdf/assembly_1.urdf
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/launch
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/launch/display.launch.py
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___1.stl
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_40___40___407.stl
+[0.887s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P6.stl
+[0.889s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P3.stl
+[0.889s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/wheel.stl
+[0.892s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___60___400.stl
+[0.892s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/wheel_Mirrored.stl
+[0.894s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_40___40___1.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/flange.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___700.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P5.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___2.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P2.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/electronics.stl
+[0.895s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR70_24_02_HG50_P4.stl
+[0.896s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR50_24_01_P1_Back.stl
+[0.898s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_57BLR50_24_01_P1_Back_Mirrored.stl
+[0.899s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/bucket.stl
+[0.899s] -- Installing: /home/ros2/Documents/NASA/lunabotics_sim/install/lunabotics_model/share/lunabotics_model/meshes/_30___30___403.stl
+[0.900s] [31mCMake Error at cmake_install.cmake:46 (file):
+[0.900s]   file INSTALL cannot find
+[0.900s]   "/home/ros2/Documents/NASA/lunabotics_sim/src/lunabotics_model/rviz": No
+[0.900s]   such file or directory.
+[0.900s] 
+[0.900s] [0m
+[0.901s] Invoked command in '/home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model' returned '1': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/ros2/ws_lsr_nav2_v2/install/lsr_description:/home/ros2/lsr_ws/install/navigation:/home/ros2/lsr_ws/install/lsr_description:/opt/ros/jazzy DEBUGINFOD_URLS=https://debuginfod.ubuntu.com /usr/bin/cmake --install /home/ros2/Documents/NASA/lunabotics_sim/build/lunabotics_model
